@@ -1,0 +1,128 @@
+---
+title: "Install Doc Reviewer on Windows and confirm it runs"
+description: "Download the Doc Reviewer executable and run it, or build from source. Covers system requirements, Chromium setup, and verifying the backend is running."
+---
+
+Doc Reviewer runs on Windows as a standalone desktop application. The recommended path is to download the pre-built `.exe` — no Python, no Node.js, no additional setup required. If you want to modify the source or run in development mode, follow the from-source path instead.
+
+## System requirements
+
+| Requirement | Details |
+|---|---|
+| Operating system | Windows 10 or Windows 11 |
+| Chromium (for web page evaluation) | Installed separately — see below |
+| Python 3.11 (from-source only) | 3.12+ not supported |
+| Node.js 18+ (from-source only) | Required to build the frontend |
+
+<Warning>
+Python 3.12 and later are not supported. The PDF parser depends on PyMuPDF 1.23, which is incompatible with Python 3.12+. Use Python 3.11 exactly.
+</Warning>
+
+## Option 1: Using the .exe (recommended)
+
+This is the fastest way to get started. The `.exe` bundles the Python backend and the React frontend into a single file.
+
+<Steps>
+  <Step title="Download doc-reviewer.exe">
+    Download the latest `doc-reviewer.exe` from the [releases page](https://github.com/amihailov76/doc-reviewer/releases) and save it to a dedicated folder — for example, `C:\Tools\DocReviewer\`.
+
+    <Tip>
+    Keep the `.exe` in its own folder. Doc Reviewer creates a `data\` subfolder next to the executable to store the database and any local configuration files. If you place the `.exe` on your Desktop, the data folder will appear there too.
+    </Tip>
+  </Step>
+  <Step title="Run the executable">
+    Double-click `doc-reviewer.exe`. The app starts a local backend server and opens the Doc Reviewer UI in your default browser automatically.
+
+    If your browser does not open, navigate to `http://localhost:8000` manually.
+  </Step>
+  <Step title="Install Chromium for web page evaluation">
+    The `.exe` does not bundle Chromium. To load and evaluate web pages by URL, you need to install Chromium once using Playwright.
+
+    Open a terminal and run:
+
+    ```bash
+    py -3.11 -m playwright install chromium
+    ```
+
+    This downloads Chromium (~150 MB) to `%LOCALAPPDATA%\ms-playwright`. You only need to do this once per machine.
+
+    <Note>
+    If you only plan to evaluate uploaded files (PDF, DOCX, Markdown, TXT) and not web pages, you can skip this step.
+    </Note>
+  </Step>
+</Steps>
+
+Your data is stored in `data\db.sqlite` next to the `.exe`. The database is created automatically on first launch. To reset all data, stop the app and delete the `data\` folder.
+
+## Option 2: From source (developers)
+
+Use this path if you want to modify Doc Reviewer or run it in development mode with hot reload.
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/amihailov76/doc-reviewer.git
+    cd doc-reviewer
+    ```
+  </Step>
+  <Step title="Install Python dependencies">
+    ```bash
+    py -3.11 -m pip install -r requirements.txt
+    ```
+  </Step>
+  <Step title="Install Chromium">
+    ```bash
+    py -3.11 -m playwright install chromium
+    ```
+  </Step>
+  <Step title="Start the backend">
+    ```bash
+    python run_dev.py
+    ```
+
+    The backend starts on `http://localhost:8000` with hot reload enabled.
+  </Step>
+  <Step title="Start the frontend">
+    Open a second terminal window:
+
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
+
+    The frontend dev server starts at `http://localhost:5173`. Open that URL in your browser.
+  </Step>
+</Steps>
+
+<Note>
+In development mode, the frontend runs on port 5173 (Vite) while the backend API runs on port 8000 (FastAPI). The pre-built `.exe` serves both from port 8000, so this two-port setup is development-only.
+</Note>
+
+## Verify the installation
+
+Once the app is running, confirm the backend is healthy by visiting:
+
+```
+http://localhost:8000/api/ping
+```
+
+You should receive:
+
+```json
+{"status": "ok"}
+```
+
+If you see an error or no response, the backend is not running. Try relaunching the `.exe` or restarting `run_dev.py`.
+
+## What gets stored locally
+
+Doc Reviewer keeps all data on your machine:
+
+| Path | Contents |
+|---|---|
+| `data\db.sqlite` (next to the `.exe`) | All projects, documents, evaluation results, model configurations |
+| `criteria.md` (next to the `.exe`, optional) | Custom evaluation criteria that override the built-in defaults |
+| `%LOCALAPPDATA%\ms-playwright` | Chromium installation (managed by Playwright) |
+
+No data is sent externally except LLM API calls to the provider you configure in **Settings → Models**.

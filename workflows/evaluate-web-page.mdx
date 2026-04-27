@@ -1,0 +1,66 @@
+---
+title: "Load and evaluate your documentation web pages by URL"
+description: "Load one or more web pages by URL using a headless Chromium browser, then evaluate their instructions as a single document in Doc Reviewer."
+---
+
+Instead of uploading a file, you can point Doc Reviewer at a live URL. The app fetches the page using a headless Chromium browser, extracts instruction sections from the HTML, and treats the result as a regular document ready for evaluation. You can add multiple pages to the same document before running the evaluation.
+
+<Warning>
+  Web page evaluation requires Chromium, which is not included in the `.exe`. You must install it once on any machine where you want to use this feature — whether you are running the `.exe` or from source. Open a terminal and run:
+
+  ```bash
+  py -3.11 -m playwright install chromium
+  ```
+</Warning>
+
+## Load a web page
+
+<Steps>
+  <Step title="Open the Evaluation page">
+    Click **Evaluation** in the sidebar, or navigate to any project and click **Evaluate by URL**.
+  </Step>
+  <Step title="Select the By URL tab">
+    At the top of the Evaluation page, click the **By URL** tab to switch from file upload to URL mode.
+  </Step>
+  <Step title="Paste a URL and click Load">
+    Paste the full URL of the page you want to evaluate (must start with `http://` or `https://`) and click **Load**. Doc Reviewer launches Chromium in headless mode and fetches the page.
+  </Step>
+  <Step title="Wait for the page to load">
+    Chromium renders the page fully before extraction begins, so JavaScript-rendered content and single-page applications (SPAs) load correctly. Fetching typically takes a few seconds. A loading indicator is shown while Chromium is running.
+  </Step>
+  <Step title="Add more pages (optional)">
+    After the first page loads successfully, a **+ Add page** button appears in the document header. Click it, paste another URL, and click **Load** to append that page's instructions to the same document. Repeat for each additional page you want to include.
+  </Step>
+  <Step title="Proceed to evaluation">
+    Once all pages are loaded, the document tree on the left shows all extracted instruction sections. Review the sections, adjust classifications if needed, and click **Evaluate** to start the LLM evaluation.
+  </Step>
+</Steps>
+
+<Note>
+  All pages you add become part of a single document. Each instruction block extracted from each page appears as a separate section in the document tree and is evaluated individually.
+</Note>
+
+## How web parsing works
+
+Doc Reviewer uses two parsing strategies depending on the source site:
+
+<Tabs>
+  <Tab title="Positive Technologies web help">
+    When the page contains custom `<instruction>`, `<action>`, or `<task>` tags — the structure used in Positive Technologies web help — Doc Reviewer uses a specialized parser that:
+
+    - Treats each `<instruction>` block as a separate document section
+    - Correctly numbers steps inside `<action>` tags
+    - Strips layout artifacts such as soft-hyphen characters (`&shy;`)
+
+    This parser produces the highest-quality extraction and is the primary use case for web evaluation.
+  </Tab>
+  <Tab title="Other websites">
+    For any site that does not use the Positive Technologies web help structure, Doc Reviewer falls back to a generic HTML-to-Markdown converter. The entire page content is converted to Markdown and then split into sections.
+
+    Extraction quality varies by site. Heavily styled pages, tab-based navigation, and content hidden behind JavaScript interactions may produce incomplete or noisy sections.
+  </Tab>
+</Tabs>
+
+<Note>
+  Because Chromium renders JavaScript before extraction, the app supports JS-rendered pages and SPAs. Static HTML pages load faster, but both work correctly.
+</Note>

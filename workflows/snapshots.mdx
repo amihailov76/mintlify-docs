@@ -1,0 +1,63 @@
+---
+title: "Save evaluation snapshots and compare quality over time"
+description: "Save evaluation results as a named snapshot, organize them in Product Groups, and compare two snapshots side by side to track documentation quality over time."
+---
+
+A snapshot is a saved copy of all evaluation results for a document at a specific point in time. Snapshots let you track how documentation quality changes across document revisions — for example, after a writing sprint or a criteria update. You can compare any two snapshots side by side to see exactly which instructions improved, regressed, were added, or were removed.
+
+## Product Groups
+
+Before you can save a snapshot, you need a **Product Group** to put it in. A Product Group is a named container that organizes related snapshots — typically all snapshots of the same product's documentation across different versions.
+
+**Example:** A group named "Product X" might contain snapshots named "v1.0 baseline", "v1.1 after review", and "v2.0 release". Each snapshot can come from a different document file or URL, but they all belong to the same product.
+
+Product Groups are separate from Projects. Projects group documents for evaluation context. Product Groups group snapshots for comparison.
+
+## Save a snapshot
+
+<Steps>
+  <Step title="Complete evaluation">
+    Run an evaluation on the document until it finishes. At least one instruction must have an evaluation result before you can save a snapshot.
+  </Step>
+  <Step title="Click Save snapshot">
+    On the document's **Evaluation** page, click **Save snapshot** in the document header or options menu.
+  </Step>
+  <Step title="Name the snapshot and select a Product Group">
+    In the dialog that appears:
+
+    - Enter a name for the snapshot (for example, `v1.0 baseline` or `after April review`).
+    - Select an existing Product Group from the dropdown, or type a new group name to create one.
+
+    Click **Save** to confirm.
+  </Step>
+  <Step title="Navigate to the Snapshots page">
+    Click **Snapshots** in the sidebar to see all saved snapshots organized by Product Group. Each group lists its snapshots with their names, source document filenames, and creation dates.
+  </Step>
+  <Step title="Compare two snapshots">
+    Select two snapshots within a group — or one snapshot and the current evaluation state of the original document — and click **Compare**. The comparison view opens side by side.
+  </Step>
+</Steps>
+
+## What comparison shows
+
+The comparison view displays all instruction sections from both snapshots side by side, grouped by change type:
+
+| Change | Meaning |
+|--------|---------|
+| **Degraded** | The section's color got worse (e.g., green → yellow, or yellow → red). Shown first. |
+| **New** | The section exists in the newer snapshot but not in the older one. |
+| **Removed** | The section exists in the older snapshot but not in the newer one. |
+| **Unchanged** | The section's color is the same in both snapshots. |
+| **Improved** | The section's color got better (e.g., red → orange, or yellow → green). Shown last. |
+
+A summary bar at the top of the comparison view shows the total count for each change type at a glance.
+
+<Tip>
+  Save a snapshot immediately after running a baseline evaluation, before making any changes to the document or criteria. This gives you a clean reference point to measure improvements against.
+</Tip>
+
+## Managing snapshots
+
+- To delete a snapshot, open the **Snapshots** page, find the snapshot, and click **Delete**. Deleting a snapshot does not affect the source document or its current evaluation results.
+- To delete a Product Group and all its snapshots, use the delete action next to the group name on the **Snapshots** page.
+- Renaming a Product Group is available via the edit action next to the group name.

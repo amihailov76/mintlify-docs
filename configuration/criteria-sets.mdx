@@ -1,0 +1,77 @@
+---
+title: "Create and switch between evaluation criteria sets"
+description: "Create, edit, and switch between criteria sets to control how Doc Reviewer evaluates your instructions. Only the active criteria set is used during evaluation."
+---
+
+A criteria set is the rubric that the LLM uses when it evaluates your instructions. It defines what a good instruction looks like — what groups of qualities to check, and what passing and failing each check means. Doc Reviewer supports multiple criteria sets so you can maintain different standards for different products, teams, or documentation types. Only one criteria set is active at a time, and all evaluations use the active set.
+
+You manage criteria sets in **Settings → Criteria sets**.
+
+## View criteria sets
+
+Go to **Settings → Criteria sets** to see all available sets. The active set is highlighted. Click any set to open it and read the full Markdown content.
+
+## Create a criteria set
+
+<Steps>
+  <Step title="Open Settings">
+    Click **Settings** in the top navigation, then select the **Criteria sets** tab.
+  </Step>
+  <Step title="Click New criteria set">
+    Click the **New criteria set** button to open the editor.
+  </Step>
+  <Step title="Name the set and write the criteria">
+    Enter a name for the set, then write or paste the criteria in Markdown format. The format is described in detail on the [Write custom evaluation criteria](/configuration/custom-criteria) page.
+  </Step>
+  <Step title="Save">
+    Click **Save**. The new set appears in the list but is not yet active.
+  </Step>
+</Steps>
+
+## Activate a criteria set
+
+Click **Activate** next to the criteria set you want to use. The previously active set is deactivated automatically.
+
+<Note>
+Changing the active criteria set only affects new evaluations. Existing evaluation results are not retroactively updated. To apply a different criteria set to a document you have already evaluated, open the document and run the evaluation again.
+</Note>
+
+## Edit a criteria set
+
+Click on any criteria set in the list to open it in the editor. Make your changes and click **Save**. Edits take effect on the next evaluation.
+
+## Delete a criteria set
+
+Click **Delete** next to any criteria set you no longer need. The default criteria set (seeded on first run) cannot be deleted. If you delete the active set, Doc Reviewer automatically activates another set from the list.
+
+## Reset the default criteria set
+
+If you have edited the default criteria set and want to restore it to its original content, click **Reset** on the default set. This restores the criteria from the `criteria.md` file that ships with the application.
+
+<Note>
+The default criteria set is seeded from `criteria.md` when you launch Doc Reviewer for the first time. If you place a custom `criteria.md` file next to `doc-reviewer.exe` before first launch, that file is used as the default instead. See [Write custom evaluation criteria](/configuration/custom-criteria) for details on the file format.
+</Note>
+
+## Criteria set format
+
+Criteria are written in Markdown with a specific structure. A brief example:
+
+```markdown
+## Роль
+
+You are a technical writer evaluating instruction quality.
+
+---
+
+## Group name
+
+### 1.1 Criterion name
+
+Description of what is checked and what passing looks like.
+
+### 1.2 Optional criterion <опциональный>
+
+Only evaluated if the relevant section exists in the instruction.
+```
+
+For a full explanation of the format — including group headers, criterion numbering, optional markers, and the Role section — see [Write custom evaluation criteria](/configuration/custom-criteria).

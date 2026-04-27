@@ -1,0 +1,88 @@
+---
+title: "Doc Reviewer current limitations and known constraints"
+description: "Known constraints covering parsing, language support, single-user design, LLM dependency, web page loading, evaluation timeout, and permanent deletion behavior."
+---
+
+This page documents the current limitations and constraints of Doc Reviewer. Understanding these boundaries helps you set realistic expectations, work around known gaps, and avoid common frustrations. Limitations listed here are not bugs — they reflect deliberate design decisions or the current state of the underlying technology.
+
+## Document parsing
+
+### Icon and symbol fonts in PDFs
+
+PDF documents sometimes use decorative icon fonts to display button glyphs, status indicators, and other UI symbols. These symbols are stored in a non-standard encoding that Doc Reviewer's PDF parser cannot extract as readable text. When Doc Reviewer encounters such a glyph, it inserts the marker `[иконка]` (icon marker) in its place.
+
+This is expected behavior. The LLM evaluation prompt explicitly instructs the model to ignore `[иконка]` markers and never treat them as missing or unnamed UI elements. If an instruction reads "Click `[иконка]` Save", the model understands that `[иконка]` is a decorative graphic, and "Save" is the actual button name.
+
+<Note>
+  If you see `[иконка]` markers in the instruction preview panel, this does not indicate a parsing error and does not affect evaluation quality.
+</Note>
+
+### Web page parsing
+
+Web page support is optimized for the Positive Technologies web help structure, which uses custom `<instruction>`, `<action>`, and `<task>` HTML tags. When loading pages from this structure, Doc Reviewer parses each `<instruction>` block as a separate section with correct step numbering and clean text.
+
+For all other websites, Doc Reviewer falls back to a generic HTML-to-Markdown conversion. The fallback works for most pages but may produce lower-quality text extraction on complex layouts, heavily styled pages, or pages with non-standard markup. If evaluation results look inconsistent for a web page, download it as a PDF and upload the file instead.
+
+## Language support
+
+Instruction detection uses morphological analysis optimized for Russian-language text. The detector looks for patterns in section headings — verb forms, noun phrases, and other constructions that signal a procedural step — that are specific to Russian grammar.
+
+English documents can be uploaded and evaluated without errors, but automatic classification accuracy may be lower. More sections may be classified as **possible** or **non-instruction** when they should be **instruction**. You can correct this manually by clicking a section's classification badge in the document tree and changing it to the appropriate value.
+
+The default criteria set and the LLM role description are also written in Russian. If you are evaluating English documents regularly, translate the active criteria set in **Settings → Criteria** for more consistent results.
+
+## Single-user design
+
+Doc Reviewer is designed for one technical writer on one machine. It does not support:
+
+- Multiple simultaneous users
+- Network or server deployment
+- Shared databases or collaborative workspaces
+- Role-based access control
+
+If you want to share results, export them to XLS using the **Export** button on the evaluation page, or share saved snapshots as reference points. There is no built-in mechanism for real-time collaboration.
+
+## LLM dependency
+
+Every instruction evaluation requires a live call to an LLM. There is no offline fallback evaluation mode — if the LLM API is unreachable or no model is configured, Doc Reviewer cannot produce evaluation results.
+
+Evaluation quality varies directly with the capability of the model you use. A large, well-tuned model (such as GPT-4o or Claude 3.5 Sonnet) produces accurate, specific recommendations. A small or poorly-tuned model may return vague, inconsistent, or incorrect scores. If results do not seem right, switching to a more capable model is the most effective fix.
+
+<Warning>
+  Do not use Doc Reviewer's evaluation results as a final quality gate if you are using a small model (under 70B parameters for open-source models, or equivalent). The scores may look plausible but be systematically wrong for your documentation domain.
+</Warning>
+
+## Web page loading
+
+Loading web pages requires Chromium, which is not bundled inside `doc-reviewer.exe`. You must install it once with:
+
+```bash
+py -3.11 -m playwright install chromium
+```
+
+Chromium is installed to the system-level Playwright cache (`%LOCALAPPDATA%\ms-playwright`) and is shared across all Playwright-based applications on your machine.
+
+Additional constraints for web page loading:
+
+- **Sites that block headless browsers** — some websites detect and reject automated browser sessions. These pages will fail to load or return incomplete content. Download the page as a PDF or DOCX and upload the file as a workaround.
+- **JavaScript-heavy SPAs** — single-page applications that load content asynchronously may not render completely before the parser captures the page. Results for these pages may be incomplete.
+
+## No undo for deletion
+
+Deleting a document, project, or snapshot is permanent and cannot be undone. When you delete a document, all associated evaluation results are deleted with it due to cascade deletion in the database. The same applies to snapshots and projects.
+
+<Warning>
+  Before deleting a document or project that has evaluation results you want to keep, export the results to XLS first.
+</Warning>
+
+## Evaluation timeout
+
+Each instruction is evaluated in a separate LLM request with a timeout of **3 minutes** (180 seconds). If the LLM does not respond within that window — due to network issues, server-side delays, or an overloaded model — the instruction is marked as failed with a timeout error and the evaluation continues with the next instruction.
+
+Timed-out instructions are not re-evaluated automatically. To retry them, re-run the full document evaluation by clicking **Evaluate** on the document page. Instructions that already have results will be re-evaluated along with any that timed out.
+
+---
+
+<Tip>
+  Found a limitation that blocks your workflow, or want to request a feature? Open an issue at [github.com/amihailov76/doc-reviewer](https://github.com/amihailov76/doc-reviewer). Include the document type, LLM provider, and a description of the expected vs. actual behavior.
+</Tip>

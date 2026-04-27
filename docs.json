@@ -1,0 +1,67 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Doc Reviewer",
+  "theme": "almond",
+  "colors": {
+    "primary": "#2D7DD2",
+    "light": "#EBF4FF",
+    "dark": "#1A4F8A"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/amihailov76/doc-reviewer"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guide",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/projects",
+              "concepts/documents",
+              "concepts/evaluation",
+              "concepts/criteria"
+            ]
+          },
+          {
+            "group": "Workflows",
+            "pages": [
+              "workflows/upload-document",
+              "workflows/evaluate-web-page",
+              "workflows/review-results",
+              "workflows/snapshots",
+              "workflows/export"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/llm-models",
+              "configuration/criteria-sets",
+              "configuration/custom-criteria"
+            ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "troubleshooting/faq",
+              "troubleshooting/known-limitations"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

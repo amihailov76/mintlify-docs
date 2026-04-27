@@ -1,0 +1,147 @@
+---
+title: "Quickstart: run your first Doc Reviewer evaluation"
+description: "Go from a fresh install to your first LLM-powered evaluation in minutes. Connect a model, create a project, upload a document, and review results."
+---
+
+This guide walks you through a complete first evaluation in Doc Reviewer — from connecting an LLM to reviewing color-coded results and exporting them. By the end, you'll have a working evaluation workflow you can repeat on any document.
+
+<Steps>
+  <Step title="Launch Doc Reviewer">
+    **Using the .exe:** Double-click `doc-reviewer.exe`. The app starts a local backend and opens the UI in your browser automatically. If your browser does not open, go to `http://localhost:8000`.
+
+    **From source:** Run the following command from the project root:
+
+    ```bash
+    python run_dev.py
+    ```
+
+    Then open `http://localhost:5173` in your browser.
+
+    <Note>
+    The first launch creates a `data\db.sqlite` database file next to the `.exe` and seeds it with default LLM models and evaluation criteria. This takes a few seconds.
+    </Note>
+  </Step>
+
+  <Step title="Connect an LLM">
+    Doc Reviewer needs an LLM to evaluate instructions. Go to **Settings → Models**.
+
+    You'll see a list of pre-configured model entries. To activate one:
+
+    1. Click the model you want to use (for example, `gpt-4o` or `claude-3-5-sonnet`).
+    2. Enter your API key in the **API key** field.
+    3. Click **Save**.
+    4. Click **Set as active** to make this the model used for evaluations.
+
+    <CodeGroup>
+
+    ```text OpenAI
+    Base URL: https://api.openai.com/v1
+    API key: sk-...
+    ```
+
+    ```text Anthropic
+    Base URL: https://api.anthropic.com/v1
+    API key: sk-ant-...
+    ```
+
+    ```text Ollama (local, no key required)
+    Base URL: http://localhost:11434/v1
+    API key: (leave blank)
+    ```
+
+    </CodeGroup>
+
+    <Tip>
+    If you're using Ollama, make sure the Ollama server is running locally before you run an evaluation. No API key is required.
+    </Tip>
+  </Step>
+
+  <Step title="Create a project">
+    Projects group documents from the same product so Doc Reviewer can use shared context to improve evaluation accuracy.
+
+    1. Click **Projects** in the left sidebar.
+    2. Click **New project**.
+    3. Enter a name that identifies the product (for example, `Firewall Manager` or `API Gateway`).
+    4. Click **Create**.
+
+    You'll be taken to the project page. You can add a product context later — it helps the LLM understand your product's terminology, audience, and components when evaluating instructions.
+  </Step>
+
+  <Step title="Upload a document">
+    From the project page, upload a file:
+
+    1. Click **Add document** or drag and drop a file onto the upload area.
+    2. Doc Reviewer accepts PDF, DOCX, Markdown (`.md`), and plain text (`.txt`) files.
+    3. Wait for the upload and parsing to complete. The document structure appears in the tree on the left.
+
+    Alternatively, to load a web page:
+
+    1. Go to **Evaluate → By URL**.
+    2. Paste the page URL and click **Load**.
+    3. The page is fetched through a headless Chromium browser, so JavaScript-rendered pages load correctly.
+
+    <Note>
+    Loading web pages requires Chromium to be installed. See [Install Doc Reviewer](/installation) if you haven't set it up yet.
+    </Note>
+  </Step>
+
+  <Step title="Review detected instructions">
+    After parsing, Doc Reviewer automatically classifies each section of your document. Sections identified as instructions or possible instructions appear highlighted in the document tree.
+
+    Browse the tree to confirm the detected sections look correct. If a section has been incorrectly flagged as an instruction — or missed — you can adjust its classification manually by clicking the section and changing its type. Sections marked **non-instruction** are excluded from LLM evaluation.
+  </Step>
+
+  <Step title="Run evaluation">
+    Click **Evaluate** in the top bar of the document view.
+
+    Doc Reviewer sends each instruction section to the active LLM with your evaluation criteria and streams results back in real time. A progress indicator shows how many sections have been evaluated. Depending on the number of instructions and the LLM response time, this typically takes 20–90 seconds for a mid-sized document.
+
+    <Tip>
+    If you have a product context set on the project, it's automatically included in each evaluation prompt — no extra steps needed.
+    </Tip>
+  </Step>
+
+  <Step title="Review results">
+    When evaluation finishes, each instruction in the document tree shows a color-coded indicator:
+
+    | Color | Meaning |
+    |---|---|
+    | Green | The instruction meets all criteria |
+    | Yellow | Minor issues — easy to fix |
+    | Orange | Problems that may affect usability |
+    | Red | Critical issues that need immediate attention |
+
+    Click any instruction to see the full breakdown: which criteria passed, which failed, and the LLM's specific recommendations for improvement.
+
+    If you believe a result is incorrect — for example, the LLM flagged an issue that doesn't apply to your product — click **Mark as false positive** to exclude that result from the summary score. False positive overrides are preserved across re-evaluations.
+
+    To understand the scoring in more detail, click **How does evaluation work? ↗** in the summary bar above the results.
+  </Step>
+
+  <Step title="Export results">
+    When you're ready to share results or log them for tracking, click **Export** in the top bar.
+
+    Doc Reviewer downloads an `.xlsx` file with one row per instruction, including the section title, evaluation color, criteria results, and recommendations.
+
+    To save a point-in-time snapshot of results — useful for comparing quality across document versions — click **Save snapshot** and give it a name. You can compare snapshots on the **Snapshots** page.
+  </Step>
+</Steps>
+
+## Next steps
+
+Now that you've completed your first evaluation, here are useful things to explore:
+
+<CardGroup cols={2}>
+  <Card title="Add product context" icon="brain" href="/concepts/projects">
+    Generate a product context for your project to improve evaluation accuracy on domain-specific terminology.
+  </Card>
+  <Card title="Customize criteria" icon="list-check" href="/configuration/criteria-sets">
+    Edit the default evaluation criteria or create a new criteria set tailored to your documentation standards.
+  </Card>
+  <Card title="Evaluate web pages" icon="globe" href="/workflows/evaluate-web-page">
+    Load documentation pages directly by URL using the built-in headless browser.
+  </Card>
+  <Card title="Compare snapshots" icon="code-compare" href="/workflows/snapshots">
+    Save evaluation results as snapshots and track quality improvements across document versions.
+  </Card>
+</CardGroup>

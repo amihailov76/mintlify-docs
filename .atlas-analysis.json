@@ -1,0 +1,99 @@
+{
+  "projectType": "saas",
+  "projectName": "Doc Reviewer",
+  "projectDescription": "A desktop application for technical writers to automatically evaluate the completeness and quality of instructions in technical documentation using LLM-powered analysis.",
+  "theme": "almond",
+  "primaryColor": "#2D7DD2",
+  "lightColor": "#EBF4FF",
+  "darkColor": "#1A4F8A",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guide",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/projects",
+              "concepts/documents",
+              "concepts/evaluation",
+              "concepts/criteria"
+            ]
+          },
+          {
+            "group": "Workflows",
+            "pages": [
+              "workflows/upload-document",
+              "workflows/evaluate-web-page",
+              "workflows/review-results",
+              "workflows/snapshots",
+              "workflows/export"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/llm-models",
+              "configuration/criteria-sets",
+              "configuration/custom-criteria"
+            ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "troubleshooting/faq",
+              "troubleshooting/known-limitations"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Upload and parse documents in PDF, DOCX, Markdown, and TXT formats",
+    "Load and evaluate web pages by URL using a headless browser",
+    "Automatic detection of instruction sections using morphological analysis",
+    "LLM-powered evaluation against configurable quality criteria",
+    "Color-coded results (green/yellow/orange/red) with actionable recommendations",
+    "Project-based organization with auto-generated product context for improved accuracy",
+    "Snapshot system for saving and comparing evaluation results across document versions",
+    "Export results to XLS format",
+    "Manage LLM models (OpenAI, Anthropic, Ollama) and criteria sets through the UI",
+    "Mark false positives to refine evaluation results",
+    "Runs entirely locally — all data stored in SQLite on the user's machine",
+    "Distributed as a single Windows .exe"
+  ],
+  "publicApiSurface": [
+    "POST /api/documents/upload — upload a document file",
+    "GET /api/documents/{id}/structure — get document section tree with evaluation results",
+    "DELETE /api/documents/{id} — delete a document",
+    "GET /api/evaluation/document/{id} — evaluate entire document via SSE stream",
+    "POST /api/evaluation/instruction/{id} — evaluate a single instruction",
+    "DELETE /api/evaluation/document/{id} — reset document evaluation",
+    "GET /api/projects/ — list projects",
+    "POST /api/projects/ — create a project",
+    "GET /api/projects/{id} — get project with documents",
+    "PATCH /api/projects/{id} — rename or update project context",
+    "DELETE /api/projects/{id} — delete a project",
+    "POST /api/projects/{id}/generate-context — generate product context via LLM",
+    "PATCH /api/projects/documents/{id}/assign — move document to a project",
+    "POST /api/snapshots/document/{id} — create evaluation snapshot",
+    "GET /api/snapshots/compare — compare two snapshots",
+    "GET /api/snapshots/document/{id}/export — download XLS export",
+    "GET /api/config/models — list LLM models",
+    "POST /api/config/models — add LLM model",
+    "PATCH /api/config/models/{id}/activate — set active model",
+    "GET /api/config/criteria — list criteria sets",
+    "POST /api/config/criteria — create criteria set",
+    "PATCH /api/config/criteria/{id}/activate — set active criteria set",
+    "POST /api/web/load — load a web page by URL"
+  ]
+}
