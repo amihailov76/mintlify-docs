@@ -46,6 +46,16 @@ jobs:
             docs/automation
           sparse-checkout-cone-mode: false
 
+      - name: Add Python to PATH
+        shell: pwsh
+        run: |
+          $pythonPath = (Get-Command python -ErrorAction Stop).Source
+          $pythonDir = Split-Path $pythonPath
+          $scriptsDir = Join-Path $pythonDir "Scripts"
+          Add-Content $env:GITHUB_PATH $pythonDir
+          Add-Content $env:GITHUB_PATH $scriptsDir
+          Write-Host "Python: $pythonPath"
+
       - name: Copy automation scripts
         run: cp -r doc-reviewer-scripts/docs/automation/. ./automation/
 
