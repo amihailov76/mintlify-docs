@@ -25,6 +25,10 @@ jobs:
     name: Translate RU → EN
     runs-on: self-hosted          # ← запускается на вашем компьютере
 
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - name: Checkout mintlify-docs
         uses: actions/checkout@v4
