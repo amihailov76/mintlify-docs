@@ -27,7 +27,7 @@ jobs:
 
     defaults:
       run:
-        shell: bash
+        shell: pwsh
 
     steps:
       - name: Checkout mintlify-docs
@@ -46,58 +46,51 @@ jobs:
             docs/automation
           sparse-checkout-cone-mode: false
 
-      - name: Add Python to PATH
-        shell: pwsh
-        run: |
-          $pythonPath = (Get-Command python -ErrorAction Stop).Source
-          $pythonDir = Split-Path $pythonPath
-          $scriptsDir = Join-Path $pythonDir "Scripts"
-          Add-Content $env:GITHUB_PATH $pythonDir
-          Add-Content $env:GITHUB_PATH $scriptsDir
-          Write-Host "Python: $pythonPath"
-
       - name: Copy automation scripts
-        run: cp -r doc-reviewer-scripts/docs/automation/. ./automation/
-
-      - name: Update config paths for this run
         run: |
-          python3 - <<'EOF'
-          import yaml, pathlib
-
-          cfg_path = pathlib.Path("automation/config.yml")
-          cfg = yaml.safe_load(cfg_path.read_text())
-          cfg["repos"]["mintlify_docs"] = "."
-          cfg_path.write_text(yaml.dump(cfg, allow_unicode=True))
-          EOF
+          New-Item -ItemType Directory -Force -Path automation | Out-Null
+          Copy-Item -Recurse -Force doc-reviewer-scripts/docs/automation/* automation/
 
       - name: Install dependencies
         run: pip install openai pyyaml
+
+      - name: Update config paths for this run
+        run: |
+          $script = @"
+          import yaml, pathlib
+          cfg_path = pathlib.Path('automation/config.yml')
+          cfg = yaml.safe_load(cfg_path.read_text())
+          cfg['repos']['mintlify_docs'] = '.'
+          cfg_path.write_text(yaml.dump(cfg, allow_unicode=True))
+          "@
+          $script | python
 
       - name: Run translation script
         env:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           PYTHONUNBUFFERED: "1"
         run: |
-          MODEL="${{ github.event.inputs.model }}"
-          SINCE="${{ github.event.inputs.since || 'HEAD~1' }}"
-          CMD="python automation/translate_to_en.py --since $SINCE --no-pr"
-          if [ -n "$MODEL" ]; then
-            CMD="$CMD --model $MODEL"
-          fi
-          $CMD
+          $model = "${{ github.event.inputs.model }}"
+          $since = "${{ github.event.inputs.since }}"
+          if (-not $since) { $since = "HEAD~1" }
+          $cmd = "python automation/translate_to_en.py --since $since --no-pr"
+          if ($model) { $cmd += " --model $model" }
+          Invoke-Expression $cmd
 
       - name: Create PR with EN updates
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          if git status --porcelain | grep -q .; then
-            BRANCH=$(git rev-parse --abbrev-ref HEAD)
-            gh pr create \
-              --title "docs: translate RU→EN $(date +%Y-%m-%d)" \
-              --body "Автоматический перевод изменений в ru/ на английский язык. Triggered by commit ${{ github.sha }}." \
-              --base main \
-              --head "$BRANCH" \
+          $changes = git status --porcelain
+          if ($changes) {
+            $branch = git rev-parse --abbrev-ref HEAD
+            $date = Get-Date -Format 'yyyy-MM-dd'
+            gh pr create `
+              --title "docs: translate RU->EN $date" `
+              --body "Автоматический перевод изменений в ru/ на английский язык. Triggered by commit ${{ github.sha }}." `
+              --base main `
+              --head $branch `
               --repo amihailov76/mintlify-docs
-          else
-            echo "Нет изменений для PR"
-          fi
+          } else {
+            Write-Host "Нет изменений для PR"
+          }
