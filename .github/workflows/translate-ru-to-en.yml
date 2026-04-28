@@ -60,11 +60,6 @@ jobs:
           cfg_path.write_text(yaml.dump(cfg, allow_unicode=True))
           EOF
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Install dependencies
         run: pip install openai pyyaml
 
@@ -75,7 +70,7 @@ jobs:
         run: |
           MODEL="${{ github.event.inputs.model }}"
           SINCE="${{ github.event.inputs.since || 'HEAD~1' }}"
-          CMD="python3 automation/translate_to_en.py --since $SINCE --no-pr"
+          CMD="python automation/translate_to_en.py --since $SINCE --no-pr"
           if [ -n "$MODEL" ]; then
             CMD="$CMD --model $MODEL"
           fi
