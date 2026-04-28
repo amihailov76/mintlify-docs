@@ -16,48 +16,95 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guide",
+        "tab": "English",
         "groups": [
           {
             "group": "Get Started",
             "pages": [
-              "introduction",
-              "installation",
-              "quickstart"
+              "en/introduction",
+              "en/installation",
+              "en/quickstart"
             ]
           },
           {
             "group": "Core Concepts",
             "pages": [
-              "concepts/projects",
-              "concepts/documents",
-              "concepts/evaluation",
-              "concepts/criteria"
+              "en/concepts/projects",
+              "en/concepts/documents",
+              "en/concepts/evaluation",
+              "en/concepts/criteria"
             ]
           },
           {
             "group": "Workflows",
             "pages": [
-              "workflows/upload-document",
-              "workflows/evaluate-web-page",
-              "workflows/review-results",
-              "workflows/snapshots",
-              "workflows/export"
+              "en/workflows/upload-document",
+              "en/workflows/evaluate-web-page",
+              "en/workflows/review-results",
+              "en/workflows/snapshots",
+              "en/workflows/export"
             ]
           },
           {
             "group": "Configuration",
             "pages": [
-              "configuration/llm-models",
-              "configuration/criteria-sets",
-              "configuration/custom-criteria"
+              "en/configuration/llm-models",
+              "en/configuration/criteria-sets",
+              "en/configuration/custom-criteria"
             ]
           },
           {
             "group": "Troubleshooting",
             "pages": [
-              "troubleshooting/faq",
-              "troubleshooting/known-limitations"
+              "en/troubleshooting/faq",
+              "en/troubleshooting/known-limitations"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Русский",
+        "groups": [
+          {
+            "group": "Начало работы",
+            "pages": [
+              "ru/introduction",
+              "ru/installation",
+              "ru/quickstart"
+            ]
+          },
+          {
+            "group": "Основные концепции",
+            "pages": [
+              "ru/concepts/projects",
+              "ru/concepts/documents",
+              "ru/concepts/evaluation",
+              "ru/concepts/criteria"
+            ]
+          },
+          {
+            "group": "Рабочие процессы",
+            "pages": [
+              "ru/workflows/upload-document",
+              "ru/workflows/evaluate-web-page",
+              "ru/workflows/review-results",
+              "ru/workflows/snapshots",
+              "ru/workflows/export"
+            ]
+          },
+          {
+            "group": "Настройка",
+            "pages": [
+              "ru/configuration/llm-models",
+              "ru/configuration/criteria-sets",
+              "ru/configuration/custom-criteria"
+            ]
+          },
+          {
+            "group": "Решение проблем",
+            "pages": [
+              "ru/troubleshooting/faq",
+              "ru/troubleshooting/known-limitations"
             ]
           }
         ]

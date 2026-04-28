@@ -1,0 +1,55 @@
+---
+title: "Upload a document and review detected instructions"
+description: "Upload a PDF, DOCX, Markdown, or TXT file to Doc Reviewer. The app automatically parses the document structure and classifies each section for evaluation."
+---
+
+When you upload a document, Doc Reviewer parses its structure, splits it into sections, and automatically classifies each section as an instruction, a possible instruction, or non-instructional content. You can review and adjust those classifications before running an evaluation.
+
+<Note>
+  Supported file formats: **PDF**, **DOCX**, **Markdown** (`.md`), and **TXT**.
+</Note>
+
+## Upload a document
+
+<Steps>
+  <Step title="Open the Projects page">
+    Navigate to **Projects** in the sidebar and open the project you want to add a document to. If you have not created a project yet, create one first — assigning a document to a project lets the LLM use product context during evaluation.
+  </Step>
+  <Step title="Upload or drag and drop">
+    On the project page, click **Upload document** or drag a file directly onto the upload area. You can also upload from the **Evaluation** page header if you prefer to work outside of a project.
+  </Step>
+  <Step title="Select a file">
+    Choose a file in PDF, DOCX, `.md`, or `.txt` format. Files over the supported formats are rejected immediately with an error message.
+  </Step>
+  <Step title="Resolve conflicts, if any">
+    If a document with the same filename already exists, the app shows a conflict dialog. Choose one of two options:
+
+    - **Replace** — delete the existing document and all its evaluation results, then upload the new file.
+    - **Keep both** — upload the new file under the same name as a separate document entry.
+  </Step>
+  <Step title="Wait for parsing and classification">
+    Doc Reviewer parses the file, extracts the section hierarchy, and runs automatic instruction detection on each section. This step completes in a few seconds for most documents. A progress indicator appears while parsing is in progress.
+  </Step>
+  <Step title="Review the document tree">
+    Once parsing finishes, the document opens in the **Evaluation** page. The left panel shows the document tree with all detected sections. Each section displays its classification badge: **instruction**, **possible**, or **non-instruction**.
+
+    Click any section to preview its content in the detail panel. You can change a section's classification manually by clicking the badge and selecting a different value. You can also toggle whether a section is included in the next evaluation run.
+  </Step>
+</Steps>
+
+<Tip>
+  For the most accurate evaluation results, assign the document to a project that has product context set. Product context tells the LLM the product name, audience, and key terminology — this improves criterion scoring for domain-specific instructions. See **Projects** → **Generate context** on your project page.
+</Tip>
+
+## What happens after upload
+
+After a successful upload, Doc Reviewer has:
+
+- Stored the parsed section hierarchy in the local SQLite database
+- Assigned each section one of three classifications:
+  - **instruction** — the section is clearly a step-by-step procedure
+  - **possible** — the section may contain instructions (marked for human review)
+  - **non-instruction** — the section is introductory, conceptual, or reference material
+- Made the document available for evaluation
+
+Only sections classified as **instruction** or **possible** are included in an evaluation run by default. You can manually include or exclude individual sections using the toggle in the document tree.

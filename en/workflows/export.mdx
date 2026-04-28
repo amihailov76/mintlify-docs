@@ -1,0 +1,47 @@
+---
+title: "Export your Doc Reviewer evaluation results to Excel"
+description: "Download evaluation results as an XLS file with one row per instruction showing the section title, page number, color rating, and LLM recommendations."
+---
+
+After running an evaluation, you can export the results to an Excel file (`.xlsx`). The export gives you a structured spreadsheet that is easy to share with your team, track in a task manager, or attach to a QA report.
+
+## Export results
+
+<Steps>
+  <Step title="Complete an evaluation">
+    Make sure at least one instruction section in the document has been evaluated. The export option is only available when evaluation results exist.
+  </Step>
+  <Step title="Click Export on the document page">
+    Open the document in the **Evaluation** page. Click the **Export** button in the document header. The browser downloads the file immediately — no dialog is shown.
+  </Step>
+  <Step title="Open the downloaded file">
+    The file is saved with the document filename as the base name, for example `installation-guide_review.xlsx`. Open it in Excel, LibreOffice Calc, or any compatible spreadsheet application.
+  </Step>
+</Steps>
+
+## What the XLS file contains
+
+The exported file has one sheet named **Evaluation results**. The first row is a header with a blue background. Each subsequent row represents one evaluated instruction section.
+
+| Column | Contents |
+|--------|----------|
+| **Section** | The instruction section title as it appears in the document tree |
+| **Page** | The page number in the source document (blank for web-based documents) |
+| **Rating** | The color rating as a label: Good, Notes, Problems, or Critical |
+| **Recommendations** | All LLM recommendations for this section, each prefixed with the criterion name and optionally an example |
+
+The **Rating** column uses cell background colors that match the in-app color scale: green, yellow, orange, or red.
+
+<Note>
+  The export includes only sections that have evaluation results. Sections classified as **non-instruction**, sections toggled off for evaluation, and sections that were skipped due to errors are not included.
+</Note>
+
+## Use cases
+
+- **Share results with the team** — send the XLS to editors, PMs, or QA engineers who do not have Doc Reviewer installed.
+- **Track issues in a task tracker** — copy rows from the spreadsheet into your bug tracker or project board to create writing tasks.
+- **Include in QA reports** — attach the file to a release checklist or documentation audit report as evidence of evaluation coverage.
+
+<Tip>
+  If you want to compare results across document versions in a spreadsheet, export after each evaluation run and keep the files alongside each other. For in-app version comparison, use snapshots instead — they give you a structured diff view without manual file management.
+</Tip>

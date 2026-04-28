@@ -1,0 +1,91 @@
+---
+title: "Frequently asked questions about using Doc Reviewer"
+description: "Answers to the most common questions about how Doc Reviewer works, what it sends to the cloud, which LLM models to use, and where your data is stored."
+---
+
+This page answers the most common questions about Doc Reviewer. If you are running into a specific problem — an app that won't open, an evaluation that returns errors, or web pages that fail to load — the answers here cover the most likely causes and fixes. If your question is not listed, check **Known limitations** for constraints that may affect your workflow.
+
+<AccordionGroup>
+  <Accordion title="Why does the app open in a browser? Is it a web app?">
+    Doc Reviewer is a local desktop application, but it uses a web-based interface for its UI. When you launch `doc-reviewer.exe`, the app starts a local backend server on `localhost:8000` and automatically opens the interface in your default browser. No internet connection is required to use the app itself. The only outbound network calls Doc Reviewer makes are LLM API requests to the provider you configure — OpenAI, Anthropic, or a local model via Ollama.
+  </Accordion>
+
+  <Accordion title="Is my data sent to the cloud?">
+    Your documents are stored entirely on your machine. When you run an evaluation, Doc Reviewer sends the text of each instruction section to the LLM API you have configured — nothing else. Your files remain in the local `data/uploads/` folder next to the `.exe`, and all metadata, evaluation results, and settings are stored in a local SQLite database at `data/db.sqlite`. Your API keys are stored locally in that database and are never transmitted anywhere other than the LLM provider's API endpoint.
+  </Accordion>
+
+  <Accordion title="Which LLM model should I use?">
+    For the most accurate evaluation results, use a capable frontier model such as **GPT-4o** (OpenAI) or **Claude 3.5 Sonnet** (Anthropic). If you prefer open-source models via Ollama, choose a model with at least 70 billion parameters — smaller models tend to produce less reliable criterion scoring and may give vague or inconsistent recommendations.
+
+    <Tip>
+      If evaluation results look inconsistent or clearly wrong, the LLM model is the first thing to check. Switch to a stronger model in **Settings → Models** and re-run the evaluation.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Can I use a local or offline model?">
+    Yes. Doc Reviewer supports any OpenAI-compatible API, including local models served by [Ollama](https://ollama.com). To configure a local model, go to **Settings → Models**, add a new model, and set the base URL to `http://localhost:11434/v1`. Leave the API key field blank — Ollama does not require authentication. Make sure Ollama is running with your chosen model loaded before you start an evaluation.
+  </Accordion>
+
+  <Accordion title="Web page loading fails — what should I do?">
+    Web page support requires Chromium, which is not bundled inside the `.exe`. If you have not installed it yet, run the following command in a terminal:
+
+    ```bash
+    py -3.11 -m playwright install chromium
+    ```
+
+    If Chromium is already installed but the page still fails to load, the site may be blocking headless browsers. Some sites detect automated requests and return an error or an empty page. In that case, download the page as a PDF or DOCX and upload the file instead.
+  </Accordion>
+
+  <Accordion title="My evaluation results look wrong — what can I do?">
+    Several things can cause inaccurate evaluation results:
+
+    - **Weak LLM model** — small or poorly-tuned models give unreliable scores. Switch to a stronger model in **Settings → Models**.
+    - **No product context** — without context, the LLM evaluates instructions without knowing the product's terminology and audience. Open your project page and generate or write product context, then re-run the evaluation.
+    - **Incorrect criteria** — the active criteria set may not match your documentation style. Review or customize criteria in **Settings → Criteria**.
+    - **False positives** — if a specific criterion is flagging things incorrectly for a particular instruction, mark it as a false positive using the override control in the evaluation result panel.
+  </Accordion>
+
+  <Accordion title="Can I evaluate documents written in English?">
+    Yes, Doc Reviewer can evaluate documents in English. However, the built-in default criteria set and the LLM role description are written in Russian. For best results with English documents, go to **Settings → Criteria**, open your active criteria set, and translate the criteria text to English. You may also want to update the `## Роль` (Role) section at the top of the criteria file, which is used as the LLM's system prompt role.
+
+    Automatic instruction detection uses morphological analysis optimized for Russian. Detection accuracy may be lower for English section titles — you can manually reclassify sections that are missed or incorrectly classified.
+  </Accordion>
+
+  <Accordion title="Where is my data stored?">
+    All data is stored in the `data/` folder next to `doc-reviewer.exe`:
+
+    - `data/db.sqlite` — the SQLite database containing all projects, documents, evaluation results, model settings, and criteria sets
+    - `data/uploads/` — the original document files you have uploaded
+
+    Do not move or delete these files while the app is running. To back up your data, copy the entire `data/` folder.
+  </Accordion>
+
+  <Accordion title="How do I update Doc Reviewer?">
+    To update to a newer version, replace `doc-reviewer.exe` with the new file. Your `data/` folder — including `data/db.sqlite` and all uploaded documents — is preserved separately and carries over automatically. You do not need to redo any configuration.
+
+    <Note>
+      If the database schema changes between versions, Doc Reviewer runs automatic migrations on startup. In rare cases where a migration cannot be applied, you may need to delete `db.sqlite` and reconfigure the app from scratch. Release notes will call this out explicitly when it applies.
+    </Note>
+  </Accordion>
+
+  <Accordion title="Can I share evaluation results with my team?">
+    Doc Reviewer does not have built-in team sharing. To share results, use one of these approaches:
+
+    - **Export to XLS** — click **Export** on the evaluation page to download a spreadsheet with all results and recommendations. Share the file by email or in a shared folder.
+    - **Snapshots** — save a named snapshot of the current evaluation state. Snapshots let you track quality over time and compare versions, but they are stored locally and cannot be shared directly.
+
+    Multi-user or server deployment is not supported.
+  </Accordion>
+
+  <Accordion title="Why are some sections not detected as instructions?">
+    Instruction detection uses morphological analysis trained on Russian-language text. It looks for patterns such as verb-noun combinations in section headings that suggest a procedural step. Sections with unusual, very short, or non-standard titles may be missed.
+
+    If a section that should be evaluated is classified as **non-instruction** or **possible**, click the classification badge in the document tree and change it to **instruction** manually. You can also toggle individual sections in or out of the evaluation run using the include/exclude control next to each section.
+  </Accordion>
+
+  <Accordion title="What does product context do?">
+    Product context is a short text description (roughly 400–700 words) of a product — its name, audience, key terminology, and main components. When you set product context for a project, Doc Reviewer includes it in every LLM evaluation prompt for documents in that project. This lets the model evaluate instructions with knowledge of your product's domain rather than guessing from the instruction text alone.
+
+    Product context noticeably improves scoring accuracy for specialized or domain-specific instructions. You can generate it automatically from the non-instructional sections of your documents by clicking **Generate context** on the project page, or write it manually.
+  </Accordion>
+</AccordionGroup>

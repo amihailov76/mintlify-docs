@@ -1,0 +1,84 @@
+---
+title: "Documents: how Doc Reviewer parses and classifies content"
+description: "Upload files or load URLs into a project. Doc Reviewer parses documents into sections and classifies each as instruction, possible, or non-instruction content."
+---
+
+A document is the source of content that Doc Reviewer analyzes. You load a document by uploading a file or providing a URL, and Doc Reviewer automatically parses it into sections, classifies each section, and presents the result as a tree you can browse and evaluate. Every document belongs to a project, and multiple documents in the same project share the project's product context during evaluation.
+
+## Supported formats
+
+<CardGroup cols={2}>
+  <Card title="PDF" icon="file-pdf">
+    Bold text is preserved so the LLM can recognize UI element names and distinguish them from surrounding prose.
+  </Card>
+  <Card title="DOCX" icon="file-word">
+    Bold formatting is preserved the same way as in PDF, keeping UI element names readable for the LLM.
+  </Card>
+  <Card title="Markdown (.md)" icon="file-code">
+    Parsed natively. Heading structure is used directly to build the section tree.
+  </Card>
+  <Card title="Plain text (.txt)" icon="file-lines">
+    Parsed as plain text. Sections are split based on heading-like patterns.
+  </Card>
+</CardGroup>
+
+### Web pages
+
+In addition to files, you can load content directly from a URL. Doc Reviewer uses a headless Chromium browser (Playwright) to fetch the page, which means JavaScript-rendered sites and single-page applications work correctly. To add a web page, select the **By URL** tab on the evaluation screen, paste the URL, and click **Load**. After the first page loads, you can add more pages from the same documentation site using the **+ Add page** button — all pages are then treated as a single document for evaluation.
+
+<Note>
+  The web parser is optimized for Positive Technologies web help, which uses custom `<instruction>`, `<action>`, and `<task>` tags. Each `<instruction>` block becomes a separate section in the document tree. For other sites, Doc Reviewer falls back to a generic HTML-to-Markdown conversion that works for most pages but may produce lower-quality results on complex layouts.
+</Note>
+
+## What happens when a document is uploaded
+
+When you upload a file or load a URL, Doc Reviewer processes it in three steps:
+
+<Steps>
+  <Step title="Parsing">
+    The file is read and split into sections based on headings. Each section gets a title, body content, heading level, and a path that reflects its position in the document hierarchy.
+  </Step>
+  <Step title="Instruction detection">
+    Each section is analyzed by the instruction detector, which checks three signals: whether the title is phrased as a deverbal noun naming a task (such as "Connection setup" or "Adding a user"), whether the body contains a purpose phrase starting with "To [verb]:", and whether the body contains a numbered list of steps. Sections that match all three signals are classified as `instruction`; those that match one or two signals are classified as `possible`; the rest are classified as `non-instruction`.
+  </Step>
+  <Step title="Classification display">
+    The classified sections appear in the document tree. You can browse the full structure, see which sections were detected as instructions, and adjust classifications before running evaluation.
+  </Step>
+</Steps>
+
+## Section classifications
+
+Every section in a document receives one of three classifications:
+
+<AccordionGroup>
+  <Accordion title="instruction">
+    The section matched all three detection signals: deverbal noun in the title, a purpose phrase in the body, and a numbered list of steps. Doc Reviewer treats these sections as confirmed instructions and includes them in evaluation by default.
+  </Accordion>
+  <Accordion title="possible">
+    The section matched one or two detection signals but not all three. It may be an instruction that is missing a standard element, or it may be a different type of content. Doc Reviewer includes `possible` sections in evaluation alongside confirmed instructions, so you can review their results and decide whether to keep them.
+  </Accordion>
+  <Accordion title="non-instruction">
+    The section matched no detection signals. These are typically introductory text, overview pages, glossaries, reference tables, and similar non-procedural content. `non-instruction` sections are never sent to the LLM for evaluation. They are used instead as source material for generating the project's product context.
+  </Accordion>
+</AccordionGroup>
+
+You can toggle individual instructions in or out of evaluation using the include/exclude control in the document tree. You can also mark a section that was incorrectly classified as a false positive so it does not affect your overall results.
+
+## The document tree
+
+When you open a document, Doc Reviewer shows its full section structure as a tree. The tree reflects the heading hierarchy of the original file — top-level headings at the root, subsections nested underneath. Each node in the tree shows:
+
+- The section title
+- Its classification (`instruction`, `possible`, or `non-instruction`)
+- Whether it is included or excluded from evaluation
+- Its evaluation result color (once evaluated)
+
+The tree view lets you navigate large documents quickly and spot which sections have problems without scrolling through the full content.
+
+## Multiple documents in one project
+
+You can add as many documents as you need to a project. Each document is evaluated independently — the LLM evaluates each instruction within a document on its own, informed by the surrounding section context (the two sections before and after) and the project's shared product context. Documents do not share instruction results with each other.
+
+<Tip>
+  If your product documentation is split across multiple files — for example, a main guide and a separate quick reference — add them all to the same project. The product context generator reads `non-instruction` sections from all documents in the project, so a richer set of source material produces a more accurate context.
+</Tip>

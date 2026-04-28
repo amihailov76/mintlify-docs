@@ -1,0 +1,95 @@
+---
+title: "Criteria: the quality rules for evaluating instructions"
+description: "Criteria are Markdown rules the LLM uses as a rubric for each instruction. Doc Reviewer ships with a built-in set covering structure, steps, and completeness."
+---
+
+Criteria define what "good" looks like for an instruction. Each criterion is a plain-text rule that describes a specific structural or content requirement, and the LLM evaluates every instruction against all active criteria, returning `ok`, `warning`, or `error` for each one. Doc Reviewer ships with a default criteria set that covers the standard structure of a technical instruction. You can edit this set or create your own in **Settings → Criteria sets**.
+
+## How criteria work
+
+When you run an evaluation, Doc Reviewer loads the active criteria set and includes the full Markdown text in the LLM prompt alongside the instruction being evaluated. The LLM reads the criteria, reads the instruction, and returns a structured JSON response with a result for every criterion and a recommendation for any criterion it rated `warning` or `error`.
+
+The criteria also contain a **Role** section (the `## Role` heading in the Markdown) that sets the evaluator persona. Doc Reviewer extracts this section and puts it in the system prompt rather than the user prompt, so the LLM evaluates with the right frame of reference before it even reads the instruction.
+
+<Info>
+  When you edit a criteria set through the UI, your changes take effect on the next evaluation run. No restart is needed.
+</Info>
+
+## The built-in criteria set
+
+The default criteria set is organized into five numbered groups. Each group covers a distinct part of an instruction's structure.
+
+<AccordionGroup>
+  <Accordion title="Group 0 — Structure">
+    **0.1 Heading**
+
+    The heading is phrased as a deverbal noun — a noun derived from a verb — that names the task: for example, "Connection setup" or "Adding a user". Infinitive forms ("Set up connection") and questions are not accepted.
+
+    **0.2 Introductory phrase**
+
+    Before the numbered steps, there is a purpose phrase in the form "To [goal]:" — a concise statement of what the instruction accomplishes, ending with a colon. For example: "To add a user to the system:". If this phrase is absent, the criterion is not met.
+  </Accordion>
+
+  <Accordion title="Group 1 — Introductory text">
+    **1.1 Purpose and context**
+
+    The introductory text explains why the reader would perform these steps: what task the instruction solves and in what scenario it applies. One or two sentences with a clear statement of purpose are sufficient.
+
+    **1.2 Prerequisites**
+
+    Requirements that must be met before starting are stated explicitly: the user's role or permissions, infrastructure dependencies, and dependencies on other settings or components. If there are no prerequisites, the criterion is considered met.
+
+    **1.3 Warnings and limitations**
+
+    If an action is irreversible — deletion, reset, data overwrite — or carries risk of negative consequences such as data loss, service interruption, or permission changes, this is stated clearly before the steps begin. Absence of a warning when such risks exist is an error. If the action is safe and reversible, the criterion is considered met.
+  </Accordion>
+
+  <Accordion title="Group 2 — Steps">
+    **2.1 One action per step**
+
+    Each numbered step contains exactly one user action. Steps do not combine multiple unrelated actions into a single item. The action is phrased as an imperative verb ("Click", "Enter", "Select"). A step that only describes where an element is located rather than what to do with it is not a standalone step — it belongs as part of another step.
+
+    **2.2 UI element names**
+
+    Steps name the specific interface elements the reader interacts with: buttons, fields, menus, tabs. Element names are either typographically distinguished or written exactly as they appear in the interface.
+
+    **2.3 Parameters and commands**
+
+    If a step involves entering a command, a parameter value, or filling in a field, the instruction specifies what to enter and why, or provides an example. Commands with multiple parameters are accompanied by a usage example.
+
+    **2.4 Intermediate results**
+
+    After key steps, the instruction describes the system's response or the intermediate outcome: what dialog opens, what changes, what message appears. This lets the reader confirm that a step completed correctly before continuing.
+  </Accordion>
+
+  <Accordion title="Group 3 — Result (optional)">
+    **3.1 Final result** `optional`
+
+    This criterion is evaluated only if the instruction contains an explicit result section or a closing statement after the steps. If no such section exists, the LLM returns `ok`. If the section is present, the criterion checks that: the result is described in the past tense ("configured", "added", "enabled"), it describes what changed in the system and how that affects further work, and it logically corresponds to the goal stated in the purpose phrase.
+  </Accordion>
+
+  <Accordion title="Group 4 — Troubleshooting (optional)">
+    **4.1 Error handling** `optional`
+
+    This criterion is evaluated only if the instruction explicitly describes possible errors or contains a troubleshooting section. If no such section exists, the LLM returns `ok`. If the section is present, the criterion checks that it covers typical problems and their solutions, or describes how to roll back the changes.
+  </Accordion>
+</AccordionGroup>
+
+## Optional criteria
+
+Criteria marked as `optional` in the criteria file (with `<optional>` in their heading) behave differently from required criteria: the LLM only evaluates them if the corresponding content actually exists in the instruction. If the element is absent — for example, the instruction has no troubleshooting section — the criterion is marked `ok` automatically, and it does not contribute errors or warnings to the color score.
+
+This prevents optional structural elements from penalizing instructions that simply do not need them.
+
+## Managing criteria sets
+
+You can view, edit, and create criteria sets in **Settings → Criteria sets**. Each set is stored as a Markdown document. The active set is the one used for all evaluations. You can have multiple sets and switch between them — for example, a strict set for final review and a lighter set for early drafts.
+
+<CardGroup cols={2}>
+  <Card title="Criteria sets" icon="list-check" href="/configuration/criteria-sets">
+    Learn how to view and manage your criteria sets in the settings UI.
+  </Card>
+  <Card title="Custom criteria" icon="pen-to-square" href="/configuration/custom-criteria">
+    Learn how to write your own criteria, including optional criteria and role definitions.
+  </Card>
+</CardGroup>

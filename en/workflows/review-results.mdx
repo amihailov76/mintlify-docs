@@ -1,0 +1,74 @@
+---
+title: "Review evaluation results and manage false positives"
+description: "Understand color-coded evaluation results, read per-criterion feedback, mark false positives to override the LLM, re-evaluate, and reset results when needed."
+---
+
+After an evaluation run completes, Doc Reviewer displays a color-coded result for every instruction section it analyzed. Each color reflects how well the section meets the configured quality criteria. Use the detail panel to read per-criterion feedback and LLM recommendations, then decide whether to act on the findings, mark false positives, or re-run the evaluation.
+
+## Color scale
+
+Every evaluated instruction receives one of four colors based on the number and severity of criterion failures:
+
+| Color | Meaning |
+|-------|---------|
+| **Green** | All criteria met. The instruction is complete and well-structured. |
+| **Yellow** | Minor issues found. The instruction is mostly correct but has room for improvement. |
+| **Orange** | Notable problems found. The instruction is missing important elements or has structural issues. |
+| **Red** | Critical issues found. The instruction has significant gaps that affect usability. |
+
+The document tree in the left panel updates in real time as each instruction is evaluated — you can see results appear one by one without waiting for the full run to finish.
+
+<Note>
+  You can open the color scale explanation at any time by clicking the **How does evaluation work? ↗** link in the evaluation summary bar at the top of the document page.
+</Note>
+
+## Reading per-criterion results
+
+Click any section in the document tree to open its detail panel on the right. The panel shows:
+
+- The section title and its classification
+- The overall color result
+- A list of individual criterion results — each criterion shows one of three states:
+  - **OK** — the criterion is satisfied
+  - **Warning** — the criterion is partially satisfied or borderline
+  - **Error** — the criterion is not satisfied
+- **Recommendations** — a list of specific, LLM-generated suggestions explaining what is missing and how to fix it. Each recommendation is tied to the criterion it addresses.
+
+## Marking false positives
+
+If you disagree with a criterion result — for example, the LLM flagged a step as missing a result description when one is clearly present — you can mark that criterion result as a false positive:
+
+1. Open the section's detail panel.
+2. Find the criterion result you want to override.
+3. Click the override toggle next to the criterion.
+
+The criterion is marked as a false positive and excluded from the color calculation for that section. False positive overrides persist across re-evaluations: when you run **Evaluate** again, the app updates the color, criteria results, and recommendations from the model, but leaves your overrides in place.
+
+<Tip>
+  Use false positive overrides to correct systematic misclassifications. For example, if a particular phrasing pattern is consistently flagged as an error across many instructions but is correct for your product's style, mark those results as false positives so they do not skew the overall quality picture.
+</Tip>
+
+## Re-evaluating a document
+
+To re-run the evaluation — for example, after editing the source document, switching to a different LLM model, or updating criteria — click **Evaluate** again on the document page. The app re-evaluates all included instruction sections:
+
+- Colors, criteria results, recommendations, and the model name are updated with the new results.
+- False positive overrides you set previously are preserved.
+
+<Note>
+  Only sections with classification **instruction** or **possible** that are toggled on for inclusion are sent to the LLM. Sections classified as **non-instruction** are never evaluated.
+</Note>
+
+## Resetting evaluation results
+
+To delete all evaluation results for a document and start fresh — for example, if you want to remove all override history along with the results — use the reset option on the document page:
+
+1. Open the document in the **Evaluation** page.
+2. Click the **Reset evaluation** action (available in the document options menu).
+3. Confirm the action.
+
+All `Evaluation` records for the document are deleted, including all false positive overrides. The document structure and sections remain intact. After resetting, you can run a clean evaluation with no prior history.
+
+<Warning>
+  Resetting evaluation results is permanent. All overrides you have set will be lost. If you want to preserve results for comparison, save a snapshot before resetting.
+</Warning>

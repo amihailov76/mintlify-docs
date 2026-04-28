@@ -1,0 +1,146 @@
+---
+title: "Write your own evaluation criteria in Doc Reviewer"
+description: "Author criteria sets in Markdown to match your documentation standards. Define groups, numbered criteria, optional checks, and the LLM evaluator role."
+---
+
+Criteria are Markdown files with a specific structure that Doc Reviewer parses to build the evaluation rubric it sends to the LLM. You can write your own criteria to reflect the documentation standards of your product, team, or industry. Custom criteria go into Doc Reviewer through **Settings → Criteria sets → New criteria set**, or by placing a `criteria.md` file next to `doc-reviewer.exe` before the first launch.
+
+## File structure
+
+A criteria file has four kinds of blocks:
+
+| Block | Syntax | Purpose |
+|---|---|---|
+| Role section | `## Роль` | Defines the expert persona given to the LLM in the system prompt |
+| Group header | `## Group name` | Groups related criteria under a named category |
+| Criterion | `### 1.1 Criterion name` | A single evaluable check with a dotted numeric ID |
+| Optional criterion | `### 1.1 Criterion name <опциональный>` | A check evaluated only if the relevant section exists |
+
+### Full format example
+
+```markdown
+## Роль
+
+You are a [role description]. [What you evaluate and why your expertise is relevant].
+
+---
+
+## Group name
+
+### 1.1 Criterion name
+
+Description of what is checked. What a passing result looks like.
+
+### 1.2 Another criterion <опциональный>
+
+Description. Only evaluated if this section is present in the instruction.
+
+## Second group
+
+### 2.1 Criterion name
+
+Description.
+```
+
+### The Role section
+
+The `## Роль` section at the top of the file defines the expert persona that the LLM adopts when evaluating instructions. Doc Reviewer extracts this text and places it in the system prompt before the evaluation task.
+
+Write the Role section as a description of the evaluator's expertise — their background, what they are evaluating, and any domain-specific knowledge they should apply. For example:
+
+```markdown
+## Роль
+
+You are a senior technical writer with a background in information security products.
+You evaluate the completeness and structural correctness of instructions — checking
+whether all steps are present, preconditions are stated, and potential errors are
+addressed. You also assess style and formatting: headings, introductory phrases,
+verb forms, and result descriptions.
+```
+
+If the Role section is absent, Doc Reviewer falls back to a built-in default role.
+
+### Optional criteria
+
+Mark a criterion as optional by appending `<опциональный>` to the heading:
+
+```markdown
+### 3.1 Final result <опциональный>
+```
+
+An optional criterion is only evaluated when the instruction contains the relevant section. If the section is absent, the criterion is automatically scored as passing (`ok`). Use optional criteria for sections that legitimately may not exist — such as a troubleshooting section or a final-result paragraph.
+
+## Default criteria structure
+
+The built-in criteria set covers five groups. This is the structure used in the default `criteria.md`:
+
+<AccordionGroup>
+  <Accordion title="Group 0 — Structure">
+    Checks the top-level form of the instruction before any content is evaluated.
+
+    | ID | Criterion | Optional |
+    |---|---|---|
+    | 0.1 | **Heading** — the heading uses a noun or verbal noun form naming the task (e.g., "Connection setup", "Adding a user"). Infinitive forms and questions are not allowed. | No |
+    | 0.2 | **Introductory phrase** — a "To [goal]:" phrase appears before the numbered steps, with the goal stated and a colon at the end. | No |
+  </Accordion>
+  <Accordion title="Group 1 — Intro text">
+    Checks the explanatory content that precedes the steps.
+
+    | ID | Criterion | Optional |
+    |---|---|---|
+    | 1.1 | **Purpose and context** — the intro explains why the user performs these steps: what task it solves and in which scenario it applies. | No |
+    | 1.2 | **Prerequisites** — requirements before starting are stated: user role or permissions, infrastructure requirements, dependencies on other settings. If none exist, the criterion passes. | No |
+    | 1.3 | **Warnings and limitations** — if an action is irreversible (deletion, reset, data overwrite) or carries risk (data loss, service interruption, permission changes), this is explicitly stated before the steps. If the action is safe and reversible, the criterion passes. | No |
+  </Accordion>
+  <Accordion title="Group 2 — Steps">
+    Checks the quality and completeness of the numbered procedure.
+
+    | ID | Criterion | Optional |
+    |---|---|---|
+    | 2.1 | **One action per step** — each numbered step contains exactly one user action, phrased as an imperative verb ("Click", "Enter", "Select"). Steps do not combine unrelated actions. | No |
+    | 2.2 | **UI elements** — steps name the specific interface elements the user interacts with (buttons, fields, menus, tabs). Element names are given exactly as they appear in the UI. | No |
+    | 2.3 | **Parameters and commands** — when a step involves entering a command, parameter value, or filling a field, the instruction states what to enter and why, or provides an example. Commands with multiple parameters include a usage example. | No |
+    | 2.4 | **Intermediate results** — after key steps, the instruction describes the system's response: what opens, what changes, what message appears. This helps the user confirm the step succeeded. | No |
+  </Accordion>
+  <Accordion title="Group 3 — Result">
+    Checks the closing section of the instruction.
+
+    | ID | Criterion | Optional |
+    |---|---|---|
+    | 3.1 | **Final result** — if the instruction has an explicit result section or a closing sentence after the steps, it describes what changed in the system in past tense and how it affects further work, and it logically matches the goal from the introductory phrase. | Yes |
+  </Accordion>
+  <Accordion title="Group 4 — Troubleshooting">
+    Checks error-handling content, if present.
+
+    | ID | Criterion | Optional |
+    |---|---|---|
+    | 4.1 | **Error handling** — if the instruction explicitly describes possible errors or includes a troubleshooting section, it lists typical problems with steps to resolve them or how to roll back changes. | Yes |
+  </Accordion>
+</AccordionGroup>
+
+## Tips for writing good criteria
+
+**Be specific about what "pass" looks like.** Vague criteria produce inconsistent LLM results. Instead of "steps are clear", write "each step contains exactly one action phrased as an imperative verb".
+
+**Use optional markers for sections that may not always exist.** If a criterion checks a section that is legitimately absent in some instructions (a troubleshooting block, a final-result paragraph), mark it as `<опциональный>`. This prevents false failures.
+
+**Keep descriptions concise.** One to two sentences per criterion is enough. The LLM reads the full criteria file for every evaluation — long descriptions increase token usage and can dilute focus.
+
+**Match the Role section to your product type.** Describe the expertise most relevant to your documentation: an information security product evaluator, a developer tools technical writer, a regulated-industry compliance reviewer, and so on. The more specific the role, the more consistently the LLM applies your standards.
+
+**Number criteria with dotted notation.** Use `1.1`, `1.2`, `2.1`, and so on. The number is used as the criterion ID in evaluation results and tooltips — keep it stable across edits.
+
+## Use your custom criteria
+
+<Tabs>
+  <Tab title="Via the UI">
+    Go to **Settings → Criteria sets → New criteria set**, paste your Markdown content, give the set a name, and click **Save**. Then click **Activate** to make it the active set.
+  </Tab>
+  <Tab title="As the default on first run">
+    Place a `criteria.md` file in the same directory as `doc-reviewer.exe` before launching the application for the first time. Doc Reviewer reads that file and seeds it as the default criteria set. The file next to the `.exe` takes priority over the built-in default.
+
+    <Note>
+    This only works on first run, when the database is empty. If you have already launched Doc Reviewer, use the UI to create or edit criteria sets instead.
+    </Note>
+  </Tab>
+</Tabs>

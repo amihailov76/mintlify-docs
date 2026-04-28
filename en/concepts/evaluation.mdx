@@ -1,0 +1,79 @@
+---
+title: "Evaluation: how Doc Reviewer scores each instruction"
+description: "Evaluation sends instructions to the LLM with criteria and context. Results arrive in real time: a color rating, per-criterion pass/fail, and recommendations."
+---
+
+Evaluation is the process of sending each instruction in a document to the LLM for analysis. The LLM reads the instruction text alongside the active criteria set and, if available, the project's product context. It returns a structured result for each instruction: a color that summarizes overall quality, a pass/fail result for every criterion, and written recommendations for anything that needs improvement. You see results stream in as they complete — you do not have to wait for the full document to finish before reviewing individual instructions.
+
+## Running an evaluation
+
+To evaluate a document, open it in the **Evaluate** view and click **Evaluate**. Doc Reviewer sends all `instruction` and `possible` sections that are marked as included. Sections classified as `non-instruction`, and any instructions you have manually excluded, are skipped.
+
+<Warning>
+  Before running evaluation, make sure you have an active LLM configured in **Settings → Models** and that your API key is set. Evaluation will fail immediately if no model is active or the key is missing.
+</Warning>
+
+## Real-time streaming progress
+
+Results stream in as they complete. As each instruction finishes, its result appears in the document tree and in the results panel immediately — you do not wait for the full batch to complete. This means you can start reviewing early results while the remaining instructions are still being evaluated.
+
+Doc Reviewer evaluates instructions one at a time. On transient errors such as network timeouts, it retries automatically before reporting a failure for that instruction.
+
+## The color scale
+
+Every evaluated instruction receives one of four colors based on how many criteria it failed and how severely:
+
+<CardGroup cols={2}>
+  <Card title="Green" icon="circle-check">
+    No errors, at most one warning. The instruction meets all criteria or has only minor issues that do not affect usability.
+  </Card>
+  <Card title="Yellow" icon="circle-exclamation">
+    Has warnings or at most one error. Non-critical criteria failed. The instruction has gaps but is still functional for most readers.
+  </Card>
+  <Card title="Orange" icon="triangle-exclamation">
+    Two or three errors. Important criteria failed. The instruction has notable problems that are likely to cause confusion or errors for readers.
+  </Card>
+  <Card title="Red" icon="circle-xmark">
+    Four or more errors. The instruction is significantly incomplete. Critical structural elements are missing.
+  </Card>
+</CardGroup>
+
+The color is calculated automatically from the per-criterion results. Each criterion returns one of three values: `ok`, `warning`, or `error`. The number of `error` values determines the color tier.
+
+## Per-criterion results
+
+For each evaluated instruction, Doc Reviewer shows a result for every criterion in your active criteria set. You can expand an instruction to see a breakdown that lists each criterion with its result:
+
+- **ok** — the criterion is fully met
+- **warning** — the criterion is partially met or has minor issues
+- **error** — the criterion is not met
+
+Criteria marked as optional (such as 3.1 "Final result" and 4.1 "Troubleshooting") are only evaluated if the corresponding section actually exists in the instruction. If it is absent, the LLM returns `ok` automatically.
+
+## Recommendations
+
+When the LLM gives a criterion a `warning` or `error` result, it also writes a recommendation explaining what is missing or needs improvement. Recommendations appear below the per-criterion results for each instruction. Each recommendation includes a description of the problem and, where helpful, a brief example showing what the corrected content should look like.
+
+## False positives
+
+Sometimes the LLM flags a criterion as failed when the instruction actually satisfies it — for example, a prerequisite section that is phrased unconventionally, or a result description that uses a valid alternative structure. You can mark individual criterion results as false positives to override the LLM's assessment.
+
+To mark a false positive, click the flag icon next to the criterion result in the instruction detail panel. The override is stored separately from the LLM result and is preserved across re-evaluations.
+
+<Note>
+  False positive overrides are **never reset** when you re-evaluate. When you run evaluation again, Doc Reviewer updates the color, criterion results, and recommendations from the new LLM response — but any overrides you have set remain in place.
+</Note>
+
+## Re-evaluation
+
+You can re-run evaluation on a document at any time. This is useful when:
+
+- You have updated your criteria set and want to apply the new rules
+- You have regenerated or manually edited the product context and want more accurate results
+- The LLM returned an unexpected result on a previous run and you want a fresh assessment
+
+Re-evaluation replaces the previous results for each instruction but preserves all false positive overrides.
+
+<Tip>
+  If you want to save a snapshot of your current results before re-evaluating — for example, to compare before and after a documentation revision — create a snapshot first. See [Snapshots](/workflows/snapshots) for details.
+</Tip>

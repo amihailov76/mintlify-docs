@@ -1,0 +1,101 @@
+---
+title: "Connect an LLM model to run Doc Reviewer evaluations"
+description: "Configure OpenAI, Anthropic, Ollama, or any OpenAI-compatible model as the evaluation engine. All API keys are stored locally and never sent to Doc Reviewer."
+---
+
+Doc Reviewer delegates all evaluation work to a large language model. Before you can run your first evaluation, you need to connect at least one model. You manage models in **Settings → Models**, where you can add, edit, activate, and delete model configurations. Only the active model is used for evaluations, but you can keep multiple configurations and switch between them at any time.
+
+## Supported providers
+
+| Provider | Base URL | API key required |
+|---|---|---|
+| OpenAI | `https://api.openai.com/v1` | Yes |
+| Anthropic | `https://api.anthropic.com/v1` | Yes |
+| Ollama (local) | `http://localhost:11434/v1` | No |
+| Any OpenAI-compatible API | Your custom base URL | Depends on provider |
+
+<Warning>
+Model quality has a significant impact on evaluation accuracy. Use a capable model — GPT-4o, Claude 3.5 Sonnet, or an equivalent — for reliable results. Smaller or weaker models may miss issues or produce vague recommendations.
+</Warning>
+
+## Add a model
+
+<Steps>
+  <Step title="Open Settings">
+    Click **Settings** in the top navigation, then select the **Models** tab.
+  </Step>
+  <Step title="Click Add model">
+    Click the **Add model** button to open the model configuration form.
+  </Step>
+  <Step title="Fill in the model details">
+    Complete all required fields:
+
+    - **Model ID** — the identifier the API expects, for example `gpt-4o` or `claude-3-5-sonnet-20241022`. This must match the model name used by your provider's API exactly.
+    - **Display name** — a human-readable label shown in the UI, for example `GPT-4o`.
+    - **Provider** — select the provider or enter a custom value.
+    - **Base URL** — the API endpoint. Use the values from the table above or your provider's documentation.
+    - **API key** — paste your secret key. Leave blank for providers that do not require one (such as Ollama).
+  </Step>
+  <Step title="Save the model">
+    Click **Save**. The model appears in your models list but is not yet active.
+  </Step>
+  <Step title="Activate the model">
+    Click **Activate** next to the model you want to use. The active model is used for all subsequent evaluations.
+  </Step>
+</Steps>
+
+<Note>
+Only one model can be active at a time. Switching the active model takes effect immediately — the next evaluation will use the newly activated model.
+</Note>
+
+## Switch the active model
+
+To switch to a different model, go to **Settings → Models** and click **Activate** next to the model you want to use. The previously active model is deactivated automatically.
+
+## API key security
+
+<Note>
+API keys are stored in a local SQLite database on your machine. They are never sent to Doc Reviewer's servers — there are none. The only outbound traffic that includes your API key is the direct API call from your machine to your LLM provider.
+</Note>
+
+## Use a local model with Ollama
+
+Ollama lets you run open-weight models locally, without any API key or external service. This is useful when you need to keep your documents on-premises or want to avoid per-token costs.
+
+<Steps>
+  <Step title="Install Ollama">
+    Download and install Ollama from [ollama.com](https://ollama.com). After installation, Ollama runs as a background service and listens on port `11434`.
+  </Step>
+  <Step title="Pull a model">
+    Open a terminal and run a model to download it:
+
+    ```bash
+    ollama run llama3
+    ```
+
+    You can use any model available in the [Ollama library](https://ollama.com/library). The `ollama run` command downloads the model if it is not already present and starts an interactive session — you can close that session after the download completes.
+  </Step>
+  <Step title="Add the model in Doc Reviewer">
+    Go to **Settings → Models → Add model** and fill in:
+
+    - **Model ID** — the Ollama model name, for example `llama3` or `mistral`.
+    - **Display name** — any label you prefer.
+    - **Base URL** — `http://localhost:11434/v1`
+    - **API key** — leave blank.
+  </Step>
+  <Step title="Activate the model">
+    Click **Save**, then click **Activate** next to the new entry.
+  </Step>
+</Steps>
+
+<Tip>
+For best results with local models, use a model with at least 7B parameters. Larger models (13B+) tend to produce more consistent evaluation output. Check the [Ollama library](https://ollama.com/library) for available options.
+</Tip>
+
+## The models.yml seed file
+
+Doc Reviewer reads `models.yml` from the directory next to `doc-reviewer.exe` once — on first run — and uses it to populate the initial model list. After that, `models.yml` has no effect. To add or change models after first run, use **Settings → Models** in the UI.
+
+<Note>
+If you are deploying Doc Reviewer to a new machine and want to pre-configure models, place a `models.yml` file next to the `.exe` before launching the application for the first time.
+</Note>
