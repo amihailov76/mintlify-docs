@@ -3,7 +3,7 @@ title: "Doc Reviewer: documentation quality analysis using LLM"
 description: "Doc Reviewer helps technical writers assess the completeness and quality of instructions in technical documentation using configurable LLM criteria."
 ---
 
-Doc Reviewer is a desktop application that automatically scans your technical documentation — PDFs, Word documents, Markdown files, and web pages — detects instruction sections, and evaluates each one against a configurable set of quality criteria using large language models. Every instruction gets a color-coded result (green, yellow, orange, or red) along with specific, actionable recommendations to help you improve your documentation.
+Doc Reviewer is a desktop application that automatically scans your technical documentation — PDFs, Word documents, Markdown files, and web pages — detects instruction sections, and evaluates each one against a configurable set of quality criteria using large language models. Every instruction gets a color‑coded result (green, yellow, orange, or red) along with specific, actionable recommendations to help you improve your documentation.
 
 <CardGroup cols={2}>
   <Card title="Installation" icon="download" href="/en/installation">
@@ -16,10 +16,13 @@ Doc Reviewer is a desktop application that automatically scans your technical do
     Understand projects, documents, evaluation results, and criteria sets.
   </Card>
   <Card title="Configuration" icon="sliders" href="/en/configuration/llm-models">
-    Connect OpenAI, Anthropic, Ollama, or any OpenAI-compatible model.
+    Connect OpenAI, Anthropic, Ollama, or any OpenAI‑compatible model.
   </Card>
   <Card title="Online checking" icon="cloud" href="/en/online-checking">
     Planned for the end of 2026: evaluate instructions without installing the application locally and export reports in multiple formats.
+  </Card>
+  <Card title="Document summary" icon="file-alt" href="/en/summary">
+    Generate a concise summary of the evaluation results for a whole document, useful for quick overviews and reporting.
   </Card>
 </CardGroup>
 
@@ -36,7 +39,10 @@ Doc Reviewer is a desktop application that automatically scans your technical do
     Create a project for your product, then upload PDF, DOCX, Markdown, or TXT files — or load pages directly from a URL.
   </Step>
   <Step title="Run evaluation and review results">
-    Click **Evaluate** to analyze all instruction sections. Review color-coded results and recommendations, then export to XLS.
+    Click **Evaluate** to analyze all instruction sections. Review color‑coded results and recommendations, then export to XLS.
+  </Step>
+  <Step title="Generate a summary">
+    After evaluation, click **Generate Summary** to obtain a high‑level overview of the document’s compliance and key findings.
   </Step>
 </Steps>
 
@@ -60,5 +66,8 @@ Doc Reviewer is a desktop application that automatically scans your technical do
   </Card>
   <Card title="Local operation and privacy" icon="lock">
     All data stays on your machine. Doc Reviewer uses a local SQLite database and runs entirely offline except for LLM API calls.
+  </Card>
+  <Card title="Document summary" icon="file-alt">
+    After an evaluation, generate a concise summary of the document’s overall compliance, highlighting major issues and strengths.
   </Card>
 </CardGroup>

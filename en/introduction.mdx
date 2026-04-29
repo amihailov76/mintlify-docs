@@ -3,7 +3,7 @@ title: "Doc Reviewer: evaluate instruction quality with AI"
 description: "Doc Reviewer is a desktop app for technical writers that uses LLMs to automatically detect and evaluate the quality of instructions in your documentation."
 ---
 
-Doc Reviewer is a desktop application that scans your technical documentation — PDF, Word documents, Markdown files, and web pages — finds instructions and evaluates them against a configurable set of criteria using an LLM. Each instruction receives a color rating (green, yellow, orange, or red) and recommendations for improvement. Everything runs locally on your computer — no cloud account, no data transfer, no subscription.
+Doc Reviewer is a desktop application that scans your technical documentation — PDF, Word documents, Markdown files, and web pages — finds instructions and evaluates them against a configurable set of criteria using an LLM. Each instruction receives a color rating (green, yellow, orange, or red) and recommendations for improvement. The app now also provides a **summary of the document check**, giving you a quick overview of overall compliance. Everything runs locally on your computer — no cloud account, no data transfer, no subscription.
 
 <CardGroup cols={2}>
   <Card title="Install Doc Reviewer" icon="download" href="/installation">
@@ -21,6 +21,9 @@ Doc Reviewer is a desktop application that scans your technical documentation 
   <Card title="LLM models" icon="sliders" href="/configuration/llm-models">
     Connect OpenAI, Anthropic, Ollama, or any OpenAI-compatible API.
   </Card>
+  <Card title="Check summary" icon="clipboard-list" href="/concepts/summary">
+    Get a concise overview of the overall compliance of a document after evaluation.
+  </Card>
 </CardGroup>
 
 <Note>
@@ -29,9 +32,9 @@ Doc Reviewer is a desktop application that scans your technical documentation 
 
 ## What Doc Reviewer does
 
-When you upload a document, Doc Reviewer parses it into sections and classifies each one using morphological analysis. Sections that contain instructions — procedural steps, task descriptions, action sequences — are sent to the LLM for evaluation. The LLM checks each instruction against criteria such as heading style, step structure, completeness, and result descriptions, then returns a score and recommendations.
+When you upload a document, Doc Reviewer parses it into sections and classifies each one using morphological analysis. Sections that contain instructions — procedural steps, task descriptions, action sequences — are sent to the LLM for evaluation. The LLM checks each instruction against criteria such as heading style, step structure, completeness, and result descriptions, then returns a score and recommendations. After the evaluation finishes, a **document‑level summary** is generated, showing the overall health of the document and highlighting the most critical problem areas.
 
-Results are color-coded for fast triage:
+Results are color‑coded for fast triage:
 
 - **Green** — the instruction meets all criteria
 - **Yellow** — minor issues that are easy to fix
@@ -59,6 +62,9 @@ Doc Reviewer is designed for technical writers at companies that produce cyberse
   <Step title="Run evaluation and review results">
     Click **Evaluate** to analyze all detected instruction sections. Review color‑coded results with recommendations, mark any false positives, and export to XLS or other formats.
   </Step>
+  <Step title="View the document summary">
+    After evaluation, open the **Summary** view to see an overall compliance score and a concise list of the most significant issues.
+  </Step>
 </Steps>
 
 ## Key features
@@ -75,6 +81,9 @@ Doc Reviewer is designed for technical writers at companies that produce cyberse
   </Card>
   <Card title="Product context for better accuracy" icon="brain">
     Generate a product context summary for each project. The LLM uses it to understand your product's terminology and audience when evaluating instructions.
+  </Card>
+  <Card title="Document check summary" icon="clipboard-list">
+    After an evaluation, a concise summary shows overall compliance, highlights critical issues, and provides quick insight into document quality.
   </Card>
   <Card title="Snapshots and version comparison" icon="code-compare">
     Save evaluation results as named snapshots and compare quality across document versions to track improvements over time.
