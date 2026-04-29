@@ -3,7 +3,7 @@ title: "Doc Reviewer: evaluate instruction quality with AI"
 description: "Doc Reviewer is a desktop app for technical writers that uses LLMs to automatically detect and evaluate the quality of instructions in your documentation."
 ---
 
-Doc Reviewer is a desktop application built for technical writers who document complex software products — security platforms, enterprise systems, and other products where precise, well-structured instructions matter. You give it a document or a web page URL, and it identifies every instruction section, evaluates each one against a configurable set of quality criteria using a large language model, and returns a color-coded result with specific recommendations. Everything runs locally on your machine — no cloud account, no data upload, no subscription.
+Doc Reviewer is a desktop application that scans your technical documentation — PDF, Word documents, Markdown files, and web pages — finds instructions and evaluates them against a configurable set of criteria using an LLM. Each instruction receives a color rating (green, yellow, orange, or red) and recommendations for improvement. Everything runs locally on your computer — no cloud account, no data transfer, no subscription.
 
 <CardGroup cols={2}>
   <Card title="Install Doc Reviewer" icon="download" href="/installation">
@@ -48,7 +48,7 @@ Doc Reviewer is designed for technical writers at companies that produce cyberse
 
 <Steps>
   <Step title="Install and launch">
-    Download `doc-reviewer.exe` and run it. The app starts a local backend on `localhost:8000` and opens the UI in your browser automatically.
+    Download `doc-reviewer.exe` and run it. The app starts a local server on `localhost:8000` and automatically opens the interface in the browser.
   </Step>
   <Step title="Connect an LLM">
     Go to **Settings → Models** and add your LLM provider — OpenAI, Anthropic, Ollama, or any OpenAI‑compatible API. Your API key is stored locally in the database.
