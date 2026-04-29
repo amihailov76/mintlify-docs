@@ -61,10 +61,11 @@ def git(args: list[str], cwd: Path) -> str:
         capture_output=True,
         text=True,
         encoding="utf-8",
+        errors="replace",
     )
     if result.returncode != 0:
         raise RuntimeError(f"git {' '.join(args)} завершился с ошибкой:\n{result.stderr}")
-    return result.stdout.strip()
+    return (result.stdout or "").strip()
 
 
 def get_changed_files(repo_path: Path, since: str, watch_paths: list[str]) -> list[str]:
@@ -228,6 +229,137 @@ def build_translate_system(style_guide: str) -> str:
     return SYSTEM_TRANSLATE_RU.format(style_guide=style_guide)
 
 
+# ─── Режим commit-message ─────────────────────────────────────────────────────
+
+SYSTEM_ANALYZE_COMMIT = """You are a documentation maintainer for Doc Reviewer.
+
+Analyze the git diff and commit message. Identify which documentation pages need to be updated.
+
+Available pages:
+{pages_list}
+
+Return ONLY a JSON array of page names that need updating.
+Example: ["introduction", "quickstart"]
+If nothing needs updating, return: []
+Return ONLY the JSON array, no explanations, no markdown."""
+
+SYSTEM_UPDATE_EN_FROM_DIFF = """You are a technical documentation editor for Doc Reviewer.
+A code change was committed (see diff and commit message below).
+Update the documentation page to reflect this change.
+Rules:
+- Preserve all MDX components exactly: <Steps>, <Step>, <Card>, <CardGroup>, <Note>, <Warning>, <Tip>, etc.
+- Keep frontmatter (---) intact unless title/description should meaningfully change.
+- Keep all href links intact.
+- Write clear, neutral technical English. No marketing language.
+- Only update what is actually affected by the change.
+- Return only the updated MDX content, no explanations."""
+
+SYSTEM_UPDATE_RU_FROM_DIFF = """Ты — редактор технической документации Doc Reviewer на русском языке.
+Был сделан коммит в коде приложения (см. diff и commit message ниже).
+Обнови MDX-страницу документации на русском языке, чтобы отразить это изменение.
+
+СТАЙЛГАЙД (применяй обязательно):
+{{style_guide}}
+
+ПРАВИЛА:
+- Сохраняй все MDX-компоненты в точности.
+- Frontmatter (---) переводи: title и description — на русский.
+- Технические термины оставляй как есть: Doc Reviewer, LLM, API, SQLite, Playwright, PDF, DOCX, MDX.
+- Меняй только то, что затронуто изменением.
+- Возвращай только готовый MDX-контент без пояснений."""
+
+
+def get_full_diff(repo_path: Path, since: str) -> str:
+    """Возвращает полный diff репозитория с указанного коммита."""
+    try:
+        return git(["diff", since, "HEAD"], cwd=repo_path)
+    except RuntimeError:
+        return ""
+
+
+def get_commit_message(repo_path: Path) -> str:
+    """Возвращает сообщение последнего коммита."""
+    try:
+        return git(["log", "-1", "--format=%s%n%b"], cwd=repo_path)
+    except RuntimeError:
+        return ""
+
+
+def get_available_pages(mintlify_docs_path: Path) -> list[str]:
+    """Возвращает список доступных страниц из папки ru/."""
+    ru_path = mintlify_docs_path / "ru"
+    if not ru_path.exists():
+        return []
+    pages = []
+    for mdx_file in sorted(ru_path.rglob("*.mdx")):
+        rel = mdx_file.relative_to(ru_path)
+        page = str(rel.with_suffix("")).replace("\\", "/")
+        pages.append(page)
+    return pages
+
+
+def analyze_commit_for_pages(
+    llm: LLMClient,
+    diff: str,
+    commit_msg: str,
+    available_pages: list[str],
+) -> list[str]:
+    """Спрашивает LLM, какие страницы документации затронуты коммитом."""
+    pages_list = "\n".join(f"- {p}" for p in available_pages)
+    system = SYSTEM_ANALYZE_COMMIT.format(pages_list=pages_list)
+    # Ограничиваем diff чтобы не превысить контекст модели
+    diff_snippet = diff[:6000] + ("\n... (diff truncated)" if len(diff) > 6000 else "")
+    user = f"Commit message:\n{commit_msg}\n\nGit diff:\n```\n{diff_snippet}\n```"
+
+    response = llm.complete(system, user).strip()
+    # Снимаем код-фенс если LLM добавил
+    if response.startswith("```"):
+        lines = response.splitlines()[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        response = "\n".join(lines).strip()
+    try:
+        pages = json.loads(response)
+        valid = [p for p in pages if p in available_pages]
+        return valid
+    except (json.JSONDecodeError, TypeError):
+        print(f"  ⚠ Не удалось разобрать ответ LLM: {response[:300]}")
+        return []
+
+
+def update_en_from_diff(
+    llm: LLMClient,
+    current_en: str,
+    diff: str,
+    commit_msg: str,
+) -> str:
+    """Обновляет EN-страницу на основе полного diff коммита."""
+    diff_snippet = diff[:4000] + ("\n... (truncated)" if len(diff) > 4000 else "")
+    user = (
+        f"Commit message:\n{commit_msg}\n\n"
+        f"Git diff:\n```diff\n{diff_snippet}\n```\n\n"
+        f"Current documentation page (EN):\n```mdx\n{current_en}\n```\n\n"
+        "Update the page to reflect the changes from the commit."
+    )
+    return llm.complete(SYSTEM_UPDATE_EN_FROM_DIFF, user)
+
+
+def update_ru_from_diff(
+    llm: LLMClient,
+    current_ru: str,
+    updated_en: str,
+    style_guide: str,
+) -> str:
+    """Обновляет RU-страницу на основе актуальной EN-версии."""
+    system = SYSTEM_UPDATE_RU_FROM_DIFF.replace("{{style_guide}}", style_guide)
+    user = (
+        f"EN-версия страницы (актуальная):\n```mdx\n{updated_en}\n```\n\n"
+        f"RU-версия страницы (текущая):\n```mdx\n{current_ru}\n```\n\n"
+        "Обнови RU-версию, чтобы она соответствовала EN-версии."
+    )
+    return llm.complete(system, user)
+
+
 # ─── Основная логика синхронизации ────────────────────────────────────────────
 
 def map_changed_files_to_pages(changed_files: list[str], file_map: dict) -> dict[str, list[str]]:
@@ -368,6 +500,8 @@ def main():
     parser.add_argument("--since", default="HEAD~1", help="Коммит, с которого читать diff")
     parser.add_argument("--dry-run", action="store_true", help="Не менять файлы")
     parser.add_argument("--no-pr", action="store_true", help="Не создавать PR")
+    parser.add_argument("--commit-mode", action="store_true",
+                        help="Режим commit-message: LLM сам определяет страницы по diff")
     args = parser.parse_args()
 
     cfg = load_config()
@@ -378,6 +512,87 @@ def main():
 
     print(f"📖 Репозиторий приложения: {doc_reviewer_path}")
     print(f"📄 Репозиторий документации: {mintlify_docs_path}")
+
+    # ── Режим commit-message ──────────────────────────────────────────────────
+    if args.commit_mode:
+        print(f"🔖 Режим: commit-message (LLM определяет страницы по diff)\n")
+        commit_msg = get_commit_message(doc_reviewer_path)
+        print(f"📝 Коммит: {commit_msg.splitlines()[0][:100]}")
+
+        full_diff = get_full_diff(doc_reviewer_path, args.since)
+        if not full_diff:
+            print("✅ Нет изменений в репозитории.")
+            return
+
+        available_pages = get_available_pages(mintlify_docs_path)
+        print(f"📚 Доступных страниц документации: {len(available_pages)}")
+
+        llm = LLMClient(cfg, args.model)
+        print(f"🤖 Используется модель: {llm.model}\n")
+
+        print("🔍 Анализирую diff — LLM определяет затронутые страницы...")
+        pages_to_update = analyze_commit_for_pages(llm, full_diff, commit_msg, available_pages)
+
+        if not pages_to_update:
+            print("✅ LLM решил, что документация не требует обновления.")
+            return
+
+        print(f"\n📑 Страницы для обновления: {', '.join(pages_to_update)}")
+
+        if args.dry_run:
+            print("\n[dry-run] Остановка перед изменением файлов.")
+            return
+
+        git_cfg = cfg["git"]
+        branch = create_sync_branch(mintlify_docs_path, git_cfg["branch_prefix"])
+        print(f"🌿 Создана ветка: {branch}\n")
+
+        updated_pages = []
+        for page in pages_to_update:
+            print(f"⚙️  Обрабатываю страницу: {page}")
+
+            print(f"  → Обновление EN...")
+            current_en = read_mdx(mintlify_docs_path, "en", page)
+            updated_en = update_en_from_diff(llm, current_en, full_diff, commit_msg)
+            write_mdx(mintlify_docs_path, "en", page, updated_en, dry_run=False)
+
+            print(f"  → Обновление RU...")
+            current_ru = read_mdx(mintlify_docs_path, "ru", page)
+            updated_ru = update_ru_from_diff(llm, current_ru, updated_en, style_guide)
+            write_mdx(mintlify_docs_path, "ru", page, updated_ru, dry_run=False)
+
+            updated_pages.append(page)
+
+        print(f"\n📤 Коммит и пуш...")
+        pushed_branch = commit_and_push(
+            mintlify_docs_path,
+            f"docs: sync {len(updated_pages)} page(s) from commit\n\n"
+            f"Updated: {', '.join(updated_pages)}\n"
+            f"Triggered by: {commit_msg.splitlines()[0][:80]}\n"
+            f"Model: {llm.model}",
+            git_cfg["commit_author_name"],
+            git_cfg["commit_author_email"],
+        )
+        print(f"  ✓ Запушено в {pushed_branch}")
+
+        if not args.no_pr:
+            print(f"\n🔀 Создаю PR...")
+            create_pr(
+                mintlify_docs_path,
+                pushed_branch,
+                git_cfg["pr_base_branch"],
+                f"docs: sync {len(updated_pages)} page(s) from doc-reviewer",
+                f"## Обновление документации\n\n"
+                f"**Коммит:** {commit_msg.splitlines()[0]}\n\n"
+                f"**Страницы:** {', '.join(f'`{p}`' for p in updated_pages)}\n\n"
+                f"**Модель:** {llm.model}\n\n"
+                "*Создано автоматически по тегу `[docs]` в commit message*",
+            )
+
+        print(f"\n✅ Готово. Обновлено страниц: {len(updated_pages)}")
+        return
+    # ── Конец режима commit-message ───────────────────────────────────────────
+
     print(f"🔍 Анализирую изменения с {args.since}...")
 
     # 1. Определяем изменённые файлы
