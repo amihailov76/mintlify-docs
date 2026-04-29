@@ -1,0 +1,98 @@
+name: Sync documentation to mintlify-docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'README.md'
+      - 'docs/**'
+      - 'CHANGELOG.md'
+      - 'criteria.md'
+      - 'models.yml'
+  workflow_dispatch:
+    inputs:
+      model:
+        description: 'LLM model name (leave empty for default from config.yml)'
+        required: false
+        default: ''
+      since:
+        description: 'Git ref to diff from (default: HEAD~1)'
+        required: false
+        default: 'HEAD~1'
+
+jobs:
+  sync-docs:
+    name: Sync documentation
+    runs-on: self-hosted          # ← запускается на вашем компьютере
+
+    steps:
+      - name: Checkout doc-reviewer
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2          # нужно для сравнения HEAD~1
+
+      - name: Checkout mintlify-docs
+        uses: actions/checkout@v4
+        with:
+          repository: amihailov76/mintlify-docs
+          path: mintlify-docs
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Copy automation scripts
+        run: |
+          # Скрипты хранятся в том же репо в папке docs/automation
+          # или в отдельном месте — укажите реальный путь
+          cp -r docs/automation/. ./sync-automation/
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install openai pyyaml
+
+      - name: Update config for this run
+        run: |
+          # Прописываем пути к репозиториям (относительно рабочей директории)
+          python3 - <<'EOF'
+          import yaml, pathlib
+
+          cfg_path = pathlib.Path("sync-automation/config.yml")
+          cfg = yaml.safe_load(cfg_path.read_text())
+          cfg["repos"]["doc_reviewer"] = "."
+          cfg["repos"]["mintlify_docs"] = "mintlify-docs"
+          cfg_path.write_text(yaml.dump(cfg, allow_unicode=True))
+          EOF
+
+      - name: Run sync script
+        env:
+          PYTHONUNBUFFERED: "1"
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}   # пусто для Ollama — просто не задавайте секрет
+        run: |
+          MODEL="${{ github.event.inputs.model }}"
+          SINCE="${{ github.event.inputs.since || 'HEAD~1' }}"
+          CMD="python3 sync-automation/sync_docs.py --since $SINCE --no-pr"
+          if [ -n "$MODEL" ]; then
+            CMD="$CMD --model $MODEL"
+          fi
+          $CMD
+
+      - name: Push changes and create PR
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          cd mintlify-docs
+          # Если есть незакоммиченные изменения — создаём PR
+          if git status --porcelain | grep -q .; then
+            BRANCH=$(git rev-parse --abbrev-ref HEAD)
+            gh pr create \
+              --title "docs: sync from doc-reviewer $(date +%Y-%m-%d)" \
+              --body "Автоматическое обновление документации. Triggered by commit ${{ github.sha }}." \
+              --base main \
+              --head "$BRANCH" \
+              --repo amihailov76/mintlify-docs
+          else
+            echo "Нет изменений для PR"
+          fi
