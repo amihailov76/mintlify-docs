@@ -1,0 +1,40 @@
+git:
+  branch_prefix: docs/sync
+  commit_author_email: bot@doc-reviewer
+  commit_author_name: Doc Sync Bot
+  create_pr: true
+  pr_base_branch: main
+llm:
+  api_key: ''
+  api_url: https://api-llm.ml.ptsecurity.ru/v1
+  available_models:
+  - openai/gpt-oss-120b
+  default_model: openai/gpt-oss-120b
+  max_tokens: 4096
+  temperature: 0.2
+  timeout_seconds: 180
+repos:
+  doc_reviewer: ../doc-reviewer
+  mintlify_docs: .
+sync:
+  file_map:
+    README.md:
+    - introduction
+    - index
+    criteria.md:
+    - concepts/criteria
+    docs/installation.md:
+    - installation
+    docs/llm-models.md:
+    - configuration/llm-models
+    docs/quickstart.md:
+    - quickstart
+  languages:
+  - en
+  - ru
+  watch_paths:
+  - README.md
+  - docs/
+  - CHANGELOG.md
+  - criteria.md
+  - models.yml
