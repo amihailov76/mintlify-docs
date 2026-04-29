@@ -23,6 +23,10 @@ Doc Reviewer is a desktop application built for technical writers who document c
   </Card>
 </CardGroup>
 
+<Note>
+**Online checking (coming soon)** – soon you will be able to evaluate instructions without installing the application locally and export reports in various formats.
+</Note>
+
 ## What Doc Reviewer does
 
 When you upload a document, Doc Reviewer parses it into sections and classifies each one using morphological analysis. Sections that contain instructions — procedural steps, task descriptions, action sequences — are sent to the LLM for evaluation. The LLM checks each instruction against criteria such as heading style, step structure, completeness, and result descriptions, then returns a score and recommendations.
@@ -38,7 +42,7 @@ You can review results in the document tree, mark false positives, export to XLS
 
 ## Who it's for
 
-Doc Reviewer is designed for technical writers at companies that produce cybersecurity products, developer tools, and complex enterprise software — products with large documentation sets where manual review of every instruction is impractical. If you maintain procedure guides, user manuals, or web-based help and want a consistent, scalable way to check instruction quality before release, Doc Reviewer is built for that workflow.
+Doc Reviewer is designed for technical writers at companies that produce cybersecurity products, developer tools, and complex enterprise software — products with large documentation sets where manual review of every instruction is impractical. If you maintain procedure guides, user manuals, or web‑based help and want a consistent, scalable way to check instruction quality before release, Doc Reviewer is built for that workflow.
 
 ## How it works
 
@@ -47,13 +51,13 @@ Doc Reviewer is designed for technical writers at companies that produce cyberse
     Download `doc-reviewer.exe` and run it. The app starts a local backend on `localhost:8000` and opens the UI in your browser automatically.
   </Step>
   <Step title="Connect an LLM">
-    Go to **Settings → Models** and add your LLM provider — OpenAI, Anthropic, Ollama, or any OpenAI-compatible API. Your API key is stored locally in the database.
+    Go to **Settings → Models** and add your LLM provider — OpenAI, Anthropic, Ollama, or any OpenAI‑compatible API. Your API key is stored locally in the database.
   </Step>
   <Step title="Create a project and upload documents">
-    Create a project for a product, then upload PDF, DOCX, Markdown, or TXT files — or paste a URL to load a web page directly using the built-in headless browser.
+    Create a project for a product, then upload PDF, DOCX, Markdown, or TXT files — or paste a URL to load a web page directly using the built‑in headless browser.
   </Step>
   <Step title="Run evaluation and review results">
-    Click **Evaluate** to analyze all detected instruction sections. Review color-coded results with recommendations, mark any false positives, and export to XLS or other formats.
+    Click **Evaluate** to analyze all detected instruction sections. Review color‑coded results with recommendations, mark any false positives, and export to XLS or other formats.
   </Step>
 </Steps>
 
@@ -61,13 +65,13 @@ Doc Reviewer is designed for technical writers at companies that produce cyberse
 
 <CardGroup cols={2}>
   <Card title="Multi-format document support" icon="file-lines">
-    Parse PDF, DOCX, Markdown, and TXT files. Load web pages by URL using Playwright and a headless Chromium browser — including JavaScript-rendered pages and SPAs.
+    Parse PDF, DOCX, Markdown, and TXT files. Load web pages by URL using Playwright and a headless Chromium browser — including JavaScript‑rendered pages and SPAs.
   </Card>
   <Card title="Automatic instruction detection" icon="magnifying-glass">
     Doc Reviewer identifies instruction sections automatically using morphological analysis. No manual tagging or preprocessing required.
   </Card>
   <Card title="Configurable evaluation criteria" icon="list-check">
-    Use the built-in criteria set or create your own. Edit and manage criteria directly in **Settings → Criteria** using Markdown format.
+    Use the built‑in criteria set or create your own. Edit and manage criteria directly in **Settings → Criteria** using Markdown format.
   </Card>
   <Card title="Product context for better accuracy" icon="brain">
     Generate a product context summary for each project. The LLM uses it to understand your product's terminology and audience when evaluating instructions.
