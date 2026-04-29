@@ -52,10 +52,11 @@ def git(args: list[str], cwd: Path) -> str:
         capture_output=True,
         text=True,
         encoding="utf-8",
+        errors="replace",
     )
     if result.returncode != 0:
         raise RuntimeError(f"git {' '.join(args)} завершился с ошибкой:\n{result.stderr}")
-    return result.stdout.strip()
+    return (result.stdout or "").strip()
 
 
 def get_changed_ru_files(repo_path: Path, since: str) -> list[str]:
