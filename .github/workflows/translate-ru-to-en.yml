@@ -72,14 +72,7 @@ jobs:
         run: |
           $since = "${{ github.event.inputs.since }}"
           if (-not $since) { $since = "HEAD~1" }
-          $changedRu = git diff --name-only $since HEAD -- 'ru/**' |
-            Where-Object { $_ -match '\.mdx$' }
-          if ($changedRu) {
-            Write-Host "Checking: $($changedRu -join ', ')"
-            & python automation/lint_docs.py @changedRu --repo-path .
-          } else {
-            Write-Host "No RU files to lint"
-          }
+          & python automation/lint_docs.py --since $since --repo-path .
 
       - name: Install dependencies
         run: pip install openai pyyaml httpx
