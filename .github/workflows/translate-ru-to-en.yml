@@ -33,6 +33,12 @@ jobs:
       - name: Fix git safe directory
         run: git config --global --add safe.directory '*'
 
+      - name: Clean leftover temp folders
+        run: |
+          if (Test-Path "doc-reviewer-scripts") {
+            Remove-Item -Recurse -Force "doc-reviewer-scripts"
+          }
+
       - name: Checkout mintlify-docs
         uses: actions/checkout@v4
         with:
@@ -58,6 +64,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path automation | Out-Null
           Copy-Item -Recurse -Force doc-reviewer-scripts/docs/automation/* automation/
+          Remove-Item -Recurse -Force doc-reviewer-scripts
 
       - name: Install dependencies
         run: pip install openai pyyaml httpx
