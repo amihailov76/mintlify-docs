@@ -68,6 +68,19 @@ jobs:
           # Убираем gitlink из индекса git, если он туда попал в предыдущих запусках
           git rm --cached -r --ignore-unmatch doc-reviewer-scripts
 
+      - name: Lint changed RU files
+        run: |
+          $since = "${{ github.event.inputs.since }}"
+          if (-not $since) { $since = "HEAD~1" }
+          $changedRu = git diff --name-only $since HEAD -- 'ru/**' |
+            Where-Object { $_ -match '\.mdx$' }
+          if ($changedRu) {
+            Write-Host "Checking: $($changedRu -join ', ')"
+            & python automation/lint_docs.py @changedRu --repo-path .
+          } else {
+            Write-Host "No RU files to lint"
+          }
+
       - name: Install dependencies
         run: pip install openai pyyaml httpx
 
