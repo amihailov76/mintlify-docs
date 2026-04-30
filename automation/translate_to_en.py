@@ -70,6 +70,14 @@ def get_changed_ru_files(repo_path: Path, since: str) -> list[str]:
     ]
 
 
+def get_file_diff(repo_path: Path, filepath: str, since: str) -> str:
+    """Возвращает unified diff конкретного файла между since и HEAD."""
+    try:
+        return git(["diff", since, "HEAD", "--", filepath], cwd=repo_path)
+    except RuntimeError:
+        return ""
+
+
 def create_sync_branch(repo_path: Path, branch_prefix: str) -> str:
     timestamp = datetime.now().strftime("%Y%m%d-%H%M")
     branch = f"{branch_prefix}-en/{timestamp}"
@@ -185,16 +193,20 @@ class LLMClient:
 # ─── Промпт ───────────────────────────────────────────────────────────────────
 
 SYSTEM_TRANSLATE_EN = """You are a technical documentation translator for Doc Reviewer.
-Your task: translate a Mintlify MDX page from Russian to English.
+Your task: update an English (EN) Mintlify MDX page to reflect changes made in the Russian (RU) source.
 
 Rules:
+- You will receive: (1) a git diff showing what changed in the RU file, (2) the full updated RU file, (3) the current EN file.
+- Use the git diff to identify exactly what changed. Apply only those changes to the EN file — do not rewrite parts that haven't changed.
 - Preserve all MDX components exactly: <Steps>, <Step>, <Card>, <CardGroup>, <Note>, <Warning>, <Tip>, <Accordion>, <AccordionGroup>, <Tabs>, <Tab>, <CodeGroup>, etc.
-- Translate the frontmatter fields title and description to English.
+- Translate the frontmatter fields title and description to English if they changed.
 - Change href links: replace /ru/ with /en/ in internal documentation links. Keep external URLs unchanged (github.com, ollama.com, etc.).
 - Keep technical terms as-is: Doc Reviewer, LLM, API, SQLite, Playwright, PDF, DOCX, Markdown, MDX, XLS.
 - Write clear, neutral technical English. No marketing language, no filler words.
 - One topic per sentence. Use active voice. Prefer simple verb predicates over nominalizations.
-- Return only the translated MDX content, no explanations."""
+- Return the complete updated EN MDX file — no explanations, no diff format, just the full file content.
+
+If no git diff is provided, do a full translation of the RU file to English."""
 
 
 # ─── Основная логика ──────────────────────────────────────────────────────────
@@ -274,17 +286,30 @@ def main():
         current_en = read_file(docs_path, en_file)
 
         if current_en:
-            user_prompt = f"""Russian (RU) version of the page — updated source:
+            ru_diff = get_file_diff(docs_path, ru_file, args.since)
+            if ru_diff:
+                print(f"  diff получен ({len(ru_diff.splitlines())} строк)")
+                diff_section = f"""Changes in the RU file (git diff):
+```diff
+{ru_diff}
+```
+
+"""
+            else:
+                print(f"  ⚠ diff пустой, передаю полный файл")
+                diff_section = ""
+
+            user_prompt = f"""{diff_section}Full Russian (RU) version (after the changes):
 ```mdx
 {ru_content}
 ```
 
-Current English (EN) version of the page:
+Current English (EN) version:
 ```mdx
 {current_en}
 ```
 
-Update the EN version to match the RU version. Only change what differs from the current EN."""
+Apply the changes from the RU diff to the EN version. Return the complete updated EN document."""
         else:
             user_prompt = f"""Russian (RU) version of the page — translate to English:
 ```mdx
