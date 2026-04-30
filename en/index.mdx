@@ -66,4 +66,12 @@ Doc Reviewer automatically scans your technical documentation — PDFs, Word doc
   <Card title="Local operation and privacy" icon="lock">
     All data stays on your machine. Doc Reviewer uses a local SQLite database and runs entirely offline except for LLM API calls.
   </Card>
+
+  <Card title="Automatic product glossary (YAKE)" icon="tags">
+    When a document is uploaded, Doc Reviewer extracts a glossary of key product terms using YAKE and includes it in LLM prompts, reducing false‑positive warnings.
+  </Card>
+
+  <Card title="Smart re‑evaluation on document updates" icon="refresh">
+    On document replacement, unchanged sections are copied from previous evaluations, partially changed sections receive diff hints, and only new content is re‑evaluated, saving LLM calls.
+  </Card>
 </CardGroup>

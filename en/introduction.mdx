@@ -80,6 +80,14 @@ Doc Reviewer is designed for technical writers at companies that produce cyberse
     Generate a product context summary for each project. The LLM uses it to understand your product's terminology and audience when evaluating instructions.
   </Card>
 
+  <Card title="Glossary extraction (YAKE)" icon="book">
+    Automatically extract a glossary of product‑specific terms from each document. The glossary is added to LLM prompts to reduce false positives and improve relevance.
+  </Card>
+
+  <Card title="Smart re‑evaluation on document replacement" icon="refresh">
+    When a document is replaced, Doc Reviewer matches sections with the previous version. Unchanged sections reuse prior evaluations, partially changed sections receive diff hints, and only new content is re‑evaluated.
+  </Card>
+
   <Card title="Snapshots and version comparison" icon="code-compare">
     Save evaluation results as named snapshots and compare quality across document versions to track improvements over time.
   </Card>
