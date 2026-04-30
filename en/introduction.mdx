@@ -3,35 +3,35 @@ title: "Doc Reviewer: evaluate instruction quality with AI"
 description: "Doc Reviewer is a desktop app for technical writers that uses LLMs to automatically detect and evaluate the quality of instructions in your documentation."
 ---
 
-Doc Reviewer is a desktop application built for technical writers who document complex software products — security platforms, enterprise systems, and other products where precise, well-structured instructions matter. You give it a document or a web page URL, and it identifies every instruction section, evaluates each one against a configurable set of quality criteria using a large language model, and returns a color-coded result with specific recommendations. Everything runs locally on your machine — no cloud account, no data upload, no subscription.
+Doc Reviewer is a desktop application that scans your technical documentation — PDF, Word documents, Markdown files, and web pages — finds instructions and evaluates them against a configurable set of criteria using an LLM. Each instruction receives a color rating (green, yellow, orange, or red) and recommendations for improvement. Everything runs locally on your computer — no cloud account, no data transfer, no subscription.
 
 <CardGroup cols={2}>
-  <Card title="Install Doc Reviewer" icon="download" href="/installation">
+  <Card title="Install Doc Reviewer" icon="download" href="/en/installation">
     Download the `.exe`, install Chromium for web page support, and get up and running in minutes.
   </Card>
-  <Card title="Quickstart" icon="bolt" href="/quickstart">
+
+  <Card title="Quickstart" icon="bolt" href="/en/quickstart">
     Connect an LLM, upload your first document, and run your first evaluation step by step.
   </Card>
-  <Card title="Projects" icon="folder" href="/concepts/projects">
+
+  <Card title="Projects" icon="folder" href="/en/concepts/projects">
     Group documents by product, generate product context, and improve evaluation accuracy.
   </Card>
-  <Card title="Evaluation" icon="chart-bar" href="/concepts/evaluation">
+
+  <Card title="Evaluation" icon="chart-bar" href="/en/concepts/evaluation">
     Understand how Doc Reviewer scores instructions and what each color result means.
   </Card>
-  <Card title="LLM models" icon="sliders" href="/configuration/llm-models">
+
+  <Card title="LLM models" icon="sliders" href="/en/configuration/llm-models">
     Connect OpenAI, Anthropic, Ollama, or any OpenAI-compatible API.
   </Card>
 </CardGroup>
-
-<Note>
-**Online checking (planned for end of 2026)** – at the end of 2026 you will be able to evaluate instructions without installing the application locally and export reports in various formats.
-</Note>
 
 ## What Doc Reviewer does
 
 When you upload a document, Doc Reviewer parses it into sections and classifies each one using morphological analysis. Sections that contain instructions — procedural steps, task descriptions, action sequences — are sent to the LLM for evaluation. The LLM checks each instruction against criteria such as heading style, step structure, completeness, and result descriptions, then returns a score and recommendations.
 
-Results are color-coded for fast triage:
+Results are color‑coded for fast triage:
 
 - **Green** — the instruction meets all criteria
 - **Yellow** — minor issues that are easy to fix
@@ -48,7 +48,7 @@ Doc Reviewer is designed for technical writers at companies that produce cyberse
 
 <Steps>
   <Step title="Install and launch">
-    Download `doc-reviewer.exe` and run it. The app starts a local backend on `localhost:8000` and opens the UI in your browser automatically.
+    Download `doc-reviewer.exe` and run it. The app starts a local server on `localhost:8000` and automatically opens the interface in the browser.
   </Step>
   <Step title="Connect an LLM">
     Go to **Settings → Models** and add your LLM provider — OpenAI, Anthropic, Ollama, or any OpenAI‑compatible API. Your API key is stored locally in the database.
@@ -67,18 +67,31 @@ Doc Reviewer is designed for technical writers at companies that produce cyberse
   <Card title="Multi-format document support" icon="file-lines">
     Parse PDF, DOCX, Markdown, and TXT files. Load web pages by URL using Playwright and a headless Chromium browser — including JavaScript‑rendered pages and SPAs.
   </Card>
+
   <Card title="Automatic instruction detection" icon="magnifying-glass">
     Doc Reviewer identifies instruction sections automatically using morphological analysis. No manual tagging or preprocessing required.
   </Card>
+
   <Card title="Configurable evaluation criteria" icon="list-check">
     Use the built‑in criteria set or create your own. Edit and manage criteria directly in **Settings → Criteria** using Markdown format.
   </Card>
+
   <Card title="Product context for better accuracy" icon="brain">
     Generate a product context summary for each project. The LLM uses it to understand your product's terminology and audience when evaluating instructions.
   </Card>
+
+  <Card title="Glossary extraction (YAKE)" icon="book">
+    Automatically extract a glossary of product‑specific terms from each document. The glossary is added to LLM prompts to reduce false positives and improve relevance.
+  </Card>
+
+  <Card title="Smart re‑evaluation on document replacement" icon="refresh">
+    When a document is replaced, Doc Reviewer matches sections with the previous version. Unchanged sections reuse prior evaluations, partially changed sections receive diff hints, and only new content is re‑evaluated.
+  </Card>
+
   <Card title="Snapshots and version comparison" icon="code-compare">
     Save evaluation results as named snapshots and compare quality across document versions to track improvements over time.
   </Card>
+
   <Card title="Local and private" icon="lock">
     All data is stored in a local SQLite database next to the `.exe`. Nothing leaves your machine except LLM API calls to the provider you configure.
   </Card>
