@@ -31,6 +31,8 @@ except ImportError:
     print("Установите зависимости: pip install openai pyyaml httpx")
     sys.exit(1)
 
+from lint_docs import lint_files, print_lint_report
+
 
 # ─── Загрузка конфигурации ────────────────────────────────────────────────────
 
@@ -263,11 +265,19 @@ def main():
         print("\n[dry-run] Остановка перед изменением файлов.")
         return
 
-    # 2. Инициализируем LLM-клиент
+    # 2. Lint RU-исходников перед переводом
+    print("\n🔍 Lint RU-исходников...")
+    ru_paths = [docs_path / f for f in changed_ru]
+    ru_errors, ru_warnings = lint_files(ru_paths, docs_path)
+    print_lint_report(ru_errors, ru_warnings, label="RU")
+    if ru_errors:
+        print("⚠ Найдены ошибки в RU-исходниках. Перевод продолжается, но исправьте их.")
+
+    # 3. Инициализируем LLM-клиент
     llm = LLMClient(cfg, args.model)
     print(f"\n🤖 Используется модель: {llm.model}")
 
-    # 3. Создаём ветку
+    # 4. Создаём ветку
     git_cfg = cfg["git"]
     branch = create_sync_branch(docs_path, git_cfg["branch_prefix"])
     print(f"\n🌿 Создана ветка: {branch}")
@@ -324,7 +334,15 @@ Apply the changes from the RU diff to the EN version. Return the complete update
         print("\n⚠ Нет файлов для перевода.")
         return
 
-    # 4. Коммит и пуш
+    # 5. Lint EN-результатов после перевода
+    print("\n🔍 Lint EN-результатов...")
+    en_paths = [docs_path / en_file for _, en_file in translated]
+    en_errors, en_warnings = lint_files(en_paths, docs_path)
+    print_lint_report(en_errors, en_warnings, label="EN")
+    if en_errors:
+        print("⚠ Найдены ошибки в EN-файлах. PR будет создан — проверьте вручную.")
+
+    # 6. Коммит и пуш
     print(f"\n📤 Коммит и пуш...")
     files_list = ", ".join(en for _, en in translated)
     commit_msg = (
@@ -340,7 +358,7 @@ Apply the changes from the RU diff to the EN version. Return the complete update
     )
     print(f"  ✓ Запушено в {pushed_branch}")
 
-    # 5. PR
+    # 7. PR
     if git_cfg.get("create_pr") and not args.no_pr:
         print(f"\n🔀 Создаю PR...")
         pr_body = (
