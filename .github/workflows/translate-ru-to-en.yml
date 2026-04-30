@@ -65,6 +65,8 @@ jobs:
           New-Item -ItemType Directory -Force -Path automation | Out-Null
           Copy-Item -Recurse -Force doc-reviewer-scripts/docs/automation/* automation/
           Remove-Item -Recurse -Force doc-reviewer-scripts
+          # Убираем gitlink из индекса git, если он туда попал в предыдущих запусках
+          git rm --cached -r --ignore-unmatch doc-reviewer-scripts
 
       - name: Install dependencies
         run: pip install openai pyyaml httpx
