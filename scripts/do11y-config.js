@@ -1,6 +1,6 @@
 window.Do11yConfig = {
-  axiomHost:    'AXIOM_HOST_PLACEHOLDER',
-  axiomToken:   'AXIOM_TOKEN_PLACEHOLDER',
+  axiomHost:    'api.axiom.co',
+  axiomToken:   'xaat-98246378-184a-40c5-8e83-e9cf1c203772',
   axiomDataset: 'mintlify-docs',
 
   framework: 'mintlify',
