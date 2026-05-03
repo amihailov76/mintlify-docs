@@ -1,5 +1,5 @@
 window.Do11yConfig = {
-  axiomHost:    'api.axiom.co',
+  axiomHost:    'us-east-1.aws.edge.axiom.co',
   axiomToken:   'xaat-98246378-184a-40c5-8e83-e9cf1c203772',
   axiomDataset: 'mintlify-docs',
 
