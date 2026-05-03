@@ -5,8 +5,7 @@ window.Do11yConfig = {
 
   framework: 'mintlify',
 
-  allowedDomains: ['pt-85b9e7a5.mintlify.app'],
-  debug: true,
+  allowedDomains: ['pt-85b9e7a5.mintlify.app', 'www.doc-reviewer.site', 'doc-reviewer.site'],
 
   trackScrollDepth:        true,
   trackSectionVisibility:  true,
