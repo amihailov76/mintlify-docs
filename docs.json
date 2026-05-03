@@ -110,5 +110,9 @@
         ]
       }
     ]
-  }
+  },
+  "scripts": [
+    { "src": "/scripts/do11y-config.js" },
+    { "src": "/scripts/do11y.min.js", "defer": true }
+  ]
 }
