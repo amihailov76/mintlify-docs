@@ -1,0 +1,52 @@
+name: Sync do11y
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'   # каждый понедельник в 09:00 UTC
+  workflow_dispatch:        # можно запустить вручную
+
+jobs:
+  sync-do11y:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for new do11y release
+        id: check
+        run: |
+          CURRENT=$(cat scripts/do11y.version)
+          LATEST=$(curl -s https://api.github.com/repos/axiomhq/do11y/releases/latest | jq -r '.tag_name' | sed 's/^v//')
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          echo "latest=$LATEST" >> $GITHUB_OUTPUT
+          if [ "$CURRENT" != "$LATEST" ]; then
+            echo "update_needed=true" >> $GITHUB_OUTPUT
+          else
+            echo "update_needed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download new do11y version
+        if: steps.check.outputs.update_needed == 'true'
+        run: |
+          VERSION=${{ steps.check.outputs.latest }}
+          curl -sL "https://github.com/axiomhq/do11y/releases/download/v${VERSION}/do11y-${VERSION}.zip" -o do11y.zip
+          unzip -o do11y.zip
+          cp do11y-${VERSION}/dist/do11y.min.js scripts/do11y.min.js
+          echo "$VERSION" > scripts/do11y.version
+
+      - name: Create Pull Request
+        if: steps.check.outputs.update_needed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          commit-message: 'chore: update do11y to v${{ steps.check.outputs.latest }}'
+          title: 'chore: update do11y to v${{ steps.check.outputs.latest }}'
+          body: |
+            Automated update of do11y from v${{ steps.check.outputs.current }} to v${{ steps.check.outputs.latest }}.
+
+            Check the [release notes](https://github.com/axiomhq/do11y/releases/tag/v${{ steps.check.outputs.latest }}) before merging.
+          branch: 'chore/update-do11y-${{ steps.check.outputs.latest }}'
