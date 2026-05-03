@@ -50,16 +50,6 @@ jobs:
           $shallow = git rev-parse --is-shallow-repository
           if ($shallow -eq "true") { git fetch --unshallow }
 
-      - name: Inject Axiom credentials into do11y config
-        env:
-          AXIOM_HOST:  ${{ secrets.AXIOM_HOST }}
-          AXIOM_TOKEN: ${{ secrets.AXIOM_TOKEN }}
-        run: |
-          (Get-Content scripts/do11y-config.js) `
-            -replace 'AXIOM_HOST_PLACEHOLDER',  $env:AXIOM_HOST `
-            -replace 'AXIOM_TOKEN_PLACEHOLDER', $env:AXIOM_TOKEN |
-          Set-Content scripts/do11y-config.js
-
       - name: Checkout automation scripts from doc-reviewer
         uses: actions/checkout@v4
         with:
