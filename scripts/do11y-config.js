@@ -6,6 +6,7 @@ window.Do11yConfig = {
   framework: 'mintlify',
 
   allowedDomains: ['pt-85b9e7a5.mintlify.app'],
+  debug: true,
 
   trackScrollDepth:        true,
   trackSectionVisibility:  true,
