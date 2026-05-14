@@ -7,11 +7,11 @@ Doc Reviewer automatically scans your technical documentation — PDFs, Word doc
 
 <CardGroup cols={2}>
   <Card title="Installation" icon="download" href="/en/installation">
-    Download and set up Doc Reviewer on Windows, connect your LLM, and run your first evaluation.
+    Download the pre‑built Windows `.exe` (no development environment needed) **or** run the application from source (Python 3.11 + Node 18). The executable includes the backend; Chromium required for URL loading must be installed separately.
   </Card>
 
   <Card title="Quick Start" icon="bolt" href="/en/quickstart">
-    Upload your first document and get evaluation results in minutes.
+    Upload your first document, optionally set a product context, and get evaluation results in minutes.
   </Card>
 
   <Card title="Core Concepts" icon="book-open" href="/en/concepts/projects">
@@ -27,18 +27,20 @@ Doc Reviewer automatically scans your technical documentation — PDFs, Word doc
 
 <Steps>
   <Step title="Install and launch">
-    Download the `doc-reviewer.exe` and run it. The app starts a local server and opens in your browser automatically.
+    Download the `doc-reviewer.exe` and run it, **or** clone the repository and start the backend (`py -3.11 run_dev.py`) and frontend (`npm run dev`). The app starts a local server and opens in your browser automatically.
   </Step>
   <Step title="Connect an LLM">
     Go to **Settings → Models** and add your API key or configure a local model via Ollama.
   </Step>
-  <Step title="Create a project and upload documents">
-    Create a project for your product, then upload PDF, DOCX, Markdown or TXT files — or upload pages by URL.
+  <Step title="Create a project, set context, and upload documents">
+    Create a project for your product, optionally generate or edit the product description, then upload PDF, DOCX, Markdown or TXT files — or upload pages by URL.
   </Step>
   <Step title="Run evaluation and review results">
     Click **Evaluate** to analyze all instruction sections. Review color‑coded results and recommendations, then export them to XLS.
   </Step>
 </Steps>
+
+> **Note:** Loading documentation from URLs requires Chromium. Install it once with `pip install playwright && playwright install chromium`. The Chromium binary (~300 MB) is not bundled with the `.exe`.
 
 ## Key features
 
