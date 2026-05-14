@@ -25,30 +25,12 @@ jobs:
     name: Translate RU → EN
     runs-on: self-hosted          # ← запускается на вашем компьютере
 
-    defaults:
-      run:
-        shell: powershell
-
     steps:
-      - name: Fix git safe directory
-        run: git config --global --add safe.directory '*'
-
-      - name: Clean leftover temp folders
-        run: |
-          if (Test-Path "doc-reviewer-scripts") {
-            Remove-Item -Recurse -Force "doc-reviewer-scripts"
-          }
-
       - name: Checkout mintlify-docs
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0          # нужна полная история для git diff
+          fetch-depth: 2          # нужно для сравнения HEAD~1
           token: ${{ secrets.GH_TOKEN }}
-
-      - name: Ensure full git history
-        run: |
-          $shallow = git rev-parse --is-shallow-repository
-          if ($shallow -eq "true") { git fetch --unshallow }
 
       - name: Checkout automation scripts from doc-reviewer
         uses: actions/checkout@v4
@@ -61,47 +43,52 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Copy automation scripts
-        run: |
-          New-Item -ItemType Directory -Force -Path automation | Out-Null
-          Copy-Item -Recurse -Force doc-reviewer-scripts/docs/automation/* automation/
-          Remove-Item -Recurse -Force doc-reviewer-scripts
-          # Убираем gitlink из индекса git, если он туда попал в предыдущих запусках
-          git rm --cached -r --ignore-unmatch doc-reviewer-scripts
-
-      - name: Lint changed RU files
-        continue-on-error: true
-        env:
-          PYTHONUTF8: "1"
-        run: |
-          $since = "${{ github.event.inputs.since }}"
-          if (-not $since) { $since = "HEAD~1" }
-          & python automation/lint_docs.py --since $since --repo-path .
-
-      - name: Install dependencies
-        run: pip install openai pyyaml httpx
+        run: cp -r doc-reviewer-scripts/docs/automation/. ./automation/
 
       - name: Update config paths for this run
         run: |
-          $script = @"
+          python3 - <<'EOF'
           import yaml, pathlib
-          cfg_path = pathlib.Path('automation/config.yml')
-          cfg = yaml.safe_load(cfg_path.read_text(encoding='utf-8'))
-          cfg['repos']['mintlify_docs'] = '.'
-          cfg_path.write_text(yaml.dump(cfg, allow_unicode=True), encoding='utf-8')
-          "@
-          $script | python
+
+          cfg_path = pathlib.Path("automation/config.yml")
+          cfg = yaml.safe_load(cfg_path.read_text())
+          cfg["repos"]["mintlify_docs"] = "."
+          cfg_path.write_text(yaml.dump(cfg, allow_unicode=True))
+          EOF
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install openai pyyaml
 
       - name: Run translation script
         env:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           PYTHONUNBUFFERED: "1"
-          PYTHONUTF8: "1"
-          LLM_SSL_VERIFY: "false"
-          LLM_NO_PROXY: "true"
         run: |
-          $model = "${{ github.event.inputs.model }}"
-          $since = "${{ github.event.inputs.since }}"
-          if (-not $since) { $since = "HEAD~1" }
-          $scriptArgs = @("automation/translate_to_en.py", "--since", $since, "--no-pr")
-          if ($model) { $scriptArgs += @("--model", $model) }
-          & python @scriptArgs
+          MODEL="${{ github.event.inputs.model }}"
+          SINCE="${{ github.event.inputs.since || 'HEAD~1' }}"
+          CMD="python3 automation/translate_to_en.py --since $SINCE --no-pr"
+          if [ -n "$MODEL" ]; then
+            CMD="$CMD --model $MODEL"
+          fi
+          $CMD
+
+      - name: Create PR with EN updates
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          if git status --porcelain | grep -q .; then
+            BRANCH=$(git rev-parse --abbrev-ref HEAD)
+            gh pr create \
+              --title "docs: translate RU→EN $(date +%Y-%m-%d)" \
+              --body "Автоматический перевод изменений в ru/ на английский язык. Triggered by commit ${{ github.sha }}." \
+              --base main \
+              --head "$BRANCH" \
+              --repo amihailov76/mintlify-docs
+          else
+            echo "Нет изменений для PR"
+          fi
